@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Musicales.Api/Musicales.Api.csproj" />
+    <Project Path="src/Musicales.AppHost/Musicales.AppHost.csproj" />
+    <Project Path="src/Musicales.Application/Musicales.Application.csproj" />
+    <Project Path="src/Musicales.Domain/Musicales.Domain.csproj" />
+    <Project Path="src/Musicales.Infrastructure/Musicales.Infrastructure.csproj" />
+    <Project Path="src/Musicales.ServiceDefaults/Musicales.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Musicales.AcceptanceTests/Musicales.AcceptanceTests.csproj" />
+    <Project Path="tests/Musicales.ArchitectureTests/Musicales.ArchitectureTests.csproj" />
+  </Folder>
+</Solution>

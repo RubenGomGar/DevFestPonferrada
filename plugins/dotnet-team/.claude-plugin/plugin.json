@@ -1,0 +1,13 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "dotnet-team",
+  "displayName": ".NET Team Harness",
+  "version": "0.1.0",
+  "description": "El expertise .NET del equipo como harness: guardarraíles de Platform, /plan desde una issue con tests en rojo, /validate frente a Platform y hooks deterministas.",
+  "author": {
+    "name": "RubenGomGar"
+  },
+  "homepage": "https://github.com/RubenGomGar/NetCoreConfMadrid2026",
+  "license": "MIT",
+  "keywords": ["dotnet", "aspire", "guardrails", "tdd", "platform", "harness"]
+}

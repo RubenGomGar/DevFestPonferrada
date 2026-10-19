@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Musicales.Application\Musicales.Application.csproj" />
+    <ProjectReference Include="..\Musicales.Infrastructure\Musicales.Infrastructure.csproj" />
+    <ProjectReference Include="..\Musicales.ServiceDefaults\Musicales.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+</Project>

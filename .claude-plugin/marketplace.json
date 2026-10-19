@@ -1,0 +1,19 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "netcoreconf-2026",
+  "owner": {
+    "name": "RubenGomGar"
+  },
+  "metadata": {
+    "description": "Marketplace de la charla de NetCoreConf Madrid 2026: del MVP al harness."
+  },
+  "plugins": [
+    {
+      "name": "dotnet-team",
+      "source": "./plugins/dotnet-team",
+      "description": "Guardarraíles .NET de Platform, /plan desde una issue con tests en rojo, /validate frente a Platform y hooks deterministas.",
+      "category": "development",
+      "keywords": ["dotnet", "aspire", "guardrails", "tdd"]
+    }
+  ]
+}

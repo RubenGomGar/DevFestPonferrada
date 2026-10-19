@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build (warnings como errores, auditoría NuGet)
+        run: dotnet build Musicales.slnx
+
+      - name: Paquetes vulnerables
+        run: |
+          dotnet list Musicales.slnx package --vulnerable --include-transitive | tee vulnerable.txt
+          ! grep -q "has the following vulnerable packages" vulnerable.txt
+
+      - name: Tests de arquitectura
+        run: dotnet test tests/Musicales.ArchitectureTests --no-build
+
+      - name: Tests de aceptación (Testcontainers)
+        run: dotnet test tests/Musicales.AcceptanceTests --no-build
+
+      - name: Tests del harness
+        run: bash plugins/dotnet-team/tests/run.sh
