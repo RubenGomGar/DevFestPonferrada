@@ -16,7 +16,7 @@ Set-Location $root
 $plugin = 'plugins/dotnet-team'
 $steps = [ordered]@{
   n1 = @{ Title = 'Skill de guardarraíles'; Paths = @("$plugin/.claude-plugin/plugin.json", "$plugin/skills/dotnet-guardrails") }
-  n2 = @{ Title = 'GitHub MCP en el plugin'; Paths = @("$plugin/.mcp.json", "$plugin/scripts/mcp") }
+  n2 = @{ Title = 'GitHub MCP en el plugin'; Paths = @("$plugin/.mcp.json") }
   n3 = @{ Title = 'Comando /plan'; Paths = @("$plugin/templates/plan.md", "$plugin/scripts/lib.sh", "$plugin/scripts/ctx/plan.sh"); Override = @("$plugin/commands/plan.md") }
   n4 = @{ Title = 'Orquestador: segunda skill'; Paths = @("$plugin/skills/dotnet-testing", "$plugin/commands/plan.md") }
   n5 = @{ Title = 'Hooks: trazas, guardia y puertas TDD · /apply'; Paths = @("$plugin/hooks", "$plugin/scripts/hooks", "$plugin/scripts/gates/plan.sh", "$plugin/commands/apply.md", "$plugin/scripts/ctx/apply.sh", "$plugin/scripts/gates/apply.sh", "$plugin/tests") }

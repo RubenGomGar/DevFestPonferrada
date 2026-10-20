@@ -3,7 +3,9 @@
     "github": {
       "type": "http",
       "url": "https://api.githubcopilot.com/mcp/x/issues/readonly",
-      "headersHelper": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/mcp/github-headers.sh\""
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
     }
   }
 }

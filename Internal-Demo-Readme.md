@@ -30,10 +30,10 @@ Cómo está organizado:
 cd C:\Charlas\NetCoreConfMadrid2026
 git restore src/Musicales.Api/Features/Obras/ObrasEndpoints.cs   # quita el DbContext comentado del ensayo: no debe subir a main
 git status                                                       # solo deben quedar los cambios del MCP y los README
-git add -A; git commit -m "MCP de GitHub con la sesión de gh y guía interna"; git push
+git add -A; git commit -m "Guía interna"; git push
 ```
 
-- [ ] `main` publicado en GitHub con `plugins/dotnet-team/scripts/mcp/` incluido (`step.ps1 n2` y el marketplace lo leen de `main`)
+- [ ] `main` publicado en GitHub (`step.ps1` y el marketplace lo leen de `main`)
 - [ ] Parte 3 completa, con todas las casillas marcadas
 - [ ] Vídeos de respaldo grabados (N0, N5 y cierre)
 - [ ] Traza real del musical en `steps/act1/trace.jsonl`
@@ -57,7 +57,10 @@ Remove-Item -Recurse -Force .work -ErrorAction SilentlyContinue
 ./steps/step.ps1 n0                               # rama demo-live sin plugin, tag n0
 Remove-Item -Recurse -Force $env:TEMP\EquipoX -ErrorAction SilentlyContinue
 Get-ChildItem Env:ANTHROPIC_BASE_URL -ErrorAction SilentlyContinue   # no debe salir nada
+$env:GITHUB_PERSONAL_ACCESS_TOKEN = gh auth token # en T1: el MCP de GitHub lo lee al arrancar claude
 ```
+
+> El token solo vive en la terminal donde lo defines. Si abres otra para lanzar `claude` con el plugin, vuelve a definirlo.
 
 Ventanas abiertas, con fuente grande:
 
@@ -175,7 +178,7 @@ claude --plugin-dir plugins/dotnet-team
 ./steps/step.ps1 n2
 ```
 
-1. Enseñar `plugins/dotnet-team/.mcp.json` y `scripts/mcp/github-headers.sh`: «GitHub remoto, solo lectura de issues: 6 herramientas en vez de 49. Se autentica con la sesión de `gh`, sin tokens en el repo».
+1. Enseñar `plugins/dotnet-team/.mcp.json`: «GitHub remoto, solo lectura de issues: 6 herramientas en vez de 49. El token llega por variable de entorno: nada de secretos en el repo».
 2. Opcional, si va bien de tiempo: `claude --plugin-dir plugins/dotnet-team` y el prompt `Lee la issue #1 de RubenGomGar/NetCoreConfMadrid2026 y hazme un plan siguiendo la skill dotnet-guardrails`. Si no, solo contarlo.
 3. **Decir:** «Funciona, pero cada persona lo pide distinto y sale distinto. Falta el comando».
 
@@ -582,7 +585,7 @@ Copy-Item .work/trace.jsonl C:\Charlas\NetCoreConfMadrid2026\steps\act1\trace.js
 | La puerta salta en un turno que no toca | Quedó una fase a medias | `Remove-Item .work/phase` |
 | Aparece `.work/NEEDS_HUMAN.md` | La puerta falló 3 veces | Lee `.work/gate/plan.log` o `.work/gate/apply.log` (según la fase), corrige y borra `NEEDS_HUMAN.md` |
 | `/apply`: «no se han podido ejecutar los tests del plan» | Docker apagado o Testcontainers sin imagen | Arranca Docker; mira `.work/apply/red.log` |
-| El MCP de GitHub no conecta | `gh` sin sesión, o el helper no se ha aprobado | `gh auth login`; `/mcp` para ver el estado. Si no, `/plan` usa `gh issue view` |
+| El MCP de GitHub no conecta | Falta `GITHUB_PERSONAL_ACCESS_TOKEN` en la terminal donde se lanzó `claude` | `$env:GITHUB_PERSONAL_ACCESS_TOKEN = gh auth token` y relanzar `claude`; `/mcp` para ver el estado. Si no, `/plan` usa `gh issue view` |
 | Tests de aceptación lentos la primera vez | Testcontainers descargando la imagen de SQL Server | `docker pull mcr.microsoft.com/mssql/server:2022-latest` antes |
 | `gateway.ps1`: «El gateway no responde» | AppHost apagado o puerto 5180 ocupado | Arranca el AppHost; `netstat -ano \| findstr 5180` |
 | Claude Code va por el gateway sin quererlo | Se ejecutó `gateway.ps1` en esa terminal | `Remove-Item Env:ANTHROPIC_BASE_URL` o cambiar de terminal |
