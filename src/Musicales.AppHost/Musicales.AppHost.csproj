@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Musicales.AgentGateway\Musicales.AgentGateway.csproj" />
     <ProjectReference Include="..\Musicales.Api\Musicales.Api.csproj" />
   </ItemGroup>
 

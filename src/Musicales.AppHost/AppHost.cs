@@ -12,4 +12,7 @@ builder.AddProject<Projects.Musicales_Api>("api")
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints();
 
+builder.AddProject<Projects.Musicales_AgentGateway>("agent-gateway")
+    .WithHttpHealthCheck("/health");
+
 await builder.Build().RunAsync();

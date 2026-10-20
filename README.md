@@ -1,80 +1,116 @@
-# NetCoreConfMadrid2026
+# Del MVP al harness
 
-	La idea principal es poder mostrar desde mi punto de vista, como poder productivizar una idea haciendo AI. Y luego en cómo podemos aplicarlo en entornos .net.
-	
-	
-	Experiencia con AI. Siempre me ha entrado la curiosidad de cómo la AI pudiera trabajar con música, llevo dos años mirando períodicamente. MVP-> Desde unas isntrucciones podría obtener una partitura compleja para poder masterizar? La última itreación fue de la siguiente manera.
-	
-	Quiero crear un micro musical, enfocado en la vida e Rasputin., y quiero que muestre ese efecto WOW que me encanta de cómo en series o pelis, el malo malisimo que empieza siendo odiado acaba siendo querido. La música quiero que sea parecida a estos estilos de musicales con este set de sintrumentos. 
-	
-	Después de conversar con la AI de las posibilidades, veo que llegamos hasta el midi, pero no es capaz de hacer una postproduccion con librerias de instrumentos reales. Pero conozco Suno, que desde un promt puedes sacar musica chula. Ahí salió mi idea de MVP inicial. Si desde un Midi y un promt especídifo de SUNO. Podría tener un output controlado independientemente de las iteraciones? Porque con el mismo promt en suno a día de hoy el no determinismo es brutal y puedes tener desde un muscial rock a una ranchera.
-	
-	Iterando sobre la conversación, obtuve el midi y el promt. Se lo pase a Suno varias veces y tuve un resultado bastante similar que me encanta y que no puedo parar de tararear.
-	
-	Hasta ahí todo bonito, tengo un mp3 que me flipa. Pero la pregunta es, como puedo productivizar esto? Que pueda replicarlo muchas veces, distribuirlo, usarlo, siempre de la misma manera. Porque aunque entienda como se ha hecho, si habro una sesion nueva, probablemente andemos con rework y no termine teniendo el mismo resultado.
-	
-	- Importancia del Harnes.  Ahora es muy popular hablar de este concepto. Que es? Para que vale? Explicar que es el Harness, como dotando con Contexto, una buena coonstitucion de AI, Skills especificas, agentes, guardarailes, commands, hooks, podemos minimizar le no determinismo y tener una capa que abraza a ala AI para que tenga resultados adecuados a mi planteamiento.
+Charla de NetCoreConf Madrid 2026. Cómo convertir una idea hecha con AI en algo que se repite, se distribuye y se usa siempre igual, primero con un musical y después en un equipo .NET.
 
-	Pero, como se construye esto? Como desde este MVP, como he cosntruido un harness sencillo. 
-	
-	Lo primero que hice fue, abrazar en una skill este paso a paso de construcción. Una vez extraida la probé y vi que el resultado era el mismo. Después de esto, la hice invocable. Definí un input específico (Set de instrumentos, estulo, velocidad, etc..) y como resultado un mp3 y un promt de Suno. A esa Skill la llamamos 'maqueta-suno'
-	
-	Vale, ahora con esa skill, mandandole los parámetros de entrada correctos mi resultado era el esperado. Aquí es importante hacer un refinamiento de la skill para que sea agnotica, una habilidad una finalidad.
-	
-	Por ahora esto el modo de uso es, invoco la skill y le paso el promt de entrada. Si no tiene los valores los pido. Un ejemplo.  Mostrar el ejemplo de invocación de la skill.
-	
-	Siguente paso:
-	
-	Abstraer ese promt en un comando, que acaba llamando a la skill. Ahora ya si llamo a /command directamente me ejecuta todo como quiero. PROS. No elegamos al usuario a poner el promt adecuado
-	
-	Ahora ya tenemos Command y Skill. -> enseñamos como funciona
-	
-	Queríendo incrementar esto, yo no soy letrista, y si genero una habilidad de letras y que también le mande esa letra a la skill de suno para que tengamos las dos versiones, instrumental y canción.
-	
-	Creo la skill y el comando lo mantengo como orquestador. Que tiene que tener de entrada, que llame al letrista y objtenga una letra, que esa letra se la pase al suno compositor y que al final tengamos letra + midi + promt.
-	
-	Metemos también el Hook de trazas,para ver que se invoca y cómo. Explicamos la telemetría y el enfoque.
-	
-	Ahora ya podría tener este comando /compositor, siguiente fase. Cómo puedo exportar esto? Paquetizar?
-	Aqui hablamos del plugin y del marketplace
-	
-	Enseñamos la instalación y enseñamos la canción?
-	
-	FASE de .Net. Porque no replicamos esto a nivel de proyecto? Muy bien. Aqui quiero poder explicar que el expertise que tenemos en las cabezas de cada persona es lo que tenemos que concetrar y tener para que la AI pueda leerlo y tenerlo como contexto, habilidades, etc..
-	
-	Ejemplo de diferencias de VibeCodign y con método o harness.
-	
-	Implementamos una skill de .net guardarailes, test, ci. Un comando de generar api por ejemplo y que antes de que termine el plan que pase la ci o los tests?
-	
-	
-	Conclusión?
-	
-	
-	
-	
-	Quiero hacer un plan.
-	
-	
-	Para ello, vamos, a definir unos giardarrailes de .net,  luego unos test que validen esos giardarrailes, etc..
-	
-	1. Voy a github a coger una issue con su MCP. Y voy a hacer un plan.  
-	2. Voy a github a hacerle un plan ahciendo mención a los gaurdarrailes.
+> Un agente no es un modelo: es un modelo **más el harness que lo rodea**. El valor no está en el prompt, está en una arquitectura de piezas pequeñas con responsabilidades claras.
 
-	3. Comando Plan que reciba una issue, que haga el plan teniendo en cuetna a los guardarailes y que antes de ahcer el plan que valide los tests.
-Hook? De ejecución de test de forma determinística?
----
+## La historia
 
-## Repositorio de la charla
+Llevo dos años buscando cómo la AI puede trabajar con música. La última iteración fue un micro musical sobre Rasputín: el malo malísimo que empieza odiado y acaba querido, con los instrumentos de *Next to Normal*.
 
-| Carpeta | Qué hay |
+Conversando con la AI llegué al MIDI, pero no a una producción con instrumentos reales. Suno sí suena bien, aunque es muy poco determinista: con el mismo prompt sale un rock un día y una ranchera al siguiente. El MVP fue este: **¿y si a Suno le paso un MIDI y un prompt muy concreto?** Funcionó. Tengo un MP3 que no paro de tararear.
+
+El problema llega después: **¿cómo lo repito mañana?** Aunque entienda cómo lo hice, en una sesión nueva vuelvo a empezar y no saco lo mismo. Ahí entra el harness: contexto, skills, comandos, agentes, guardarraíles y hooks que rodean a la AI y reducen el no determinismo.
+
+## La escalera
+
+La charla sube la misma escalera dos veces. Primero con el musical, contado. Después con .NET, en directo.
+
+| Peldaño | Acto 1 · Musical | Acto 2 · .NET |
+|---|---|---|
+| Sin harness | Conversación: rock un día, ranchera al siguiente | Vibe coding: lógica en el endpoint, sin tests |
+| Skill | `maqueta-suno`: el paso a paso extraído | `dotnet-guardrails`: Platform condensado, más tests de arquitectura |
+| Contrato de entrada | Instrumentos, estilo, tempo | La issue de GitHub, vía MCP |
+| Comando | `/compositor`: nadie tiene que escribir el prompt bueno | `/dotnet-team:plan <issue>` |
+| Orquestador | `letra-musical` → puerta humana → `maqueta-suno` | `dotnet-guardrails` + `dotnet-testing` |
+| Hooks | Trazas de qué se invoca | Trazas + guardia de escrituras + puerta TDD determinista |
+| Plugin | `musical@musical-marketplace` | `dotnet-team@netcoreconf-2026` |
+
+El expertise que el equipo lleva en la cabeza solo escala si la AI lo puede leer (skills) y si hay algo que la obliga a respetarlo (tests, hooks, puertas).
+
+## Qué hay en el repo
+
+| Carpeta | Qué es |
 |---|---|
-| [`steps/`](steps/README.md) | Guion, tiempos, chuleta y `step.ps1` para avanzar la demo paso a paso |
-| `src/`, `tests/` | `Musicales`: API .NET con Aspire siguiendo Platform, con tests de arquitectura y de aceptación (Testcontainers) |
+| [`steps/`](steps/README.md) | Guion de 45 minutos, chuleta, material de los dos actos y `step.ps1` para avanzar la demo |
+| `src/Musicales.*` | API .NET 10 con Aspire siguiendo [Platform](https://platform.plainconcepts.com/docs/backend): Clean Architecture, vertical slices, CQS, `ErrorOr`, EF Core, SQL Server |
+| `tests/Musicales.ArchitectureTests` | Los guardarraíles convertidos en código: capas, dependencias, handlers `sealed` que devuelven `ErrorOr` |
+| `tests/Musicales.AcceptanceTests` | Tests de integración vía HTTP con `WebApplicationFactory` + Testcontainers |
 | [`plugins/dotnet-team/`](plugins/dotnet-team/README.md) | El harness que se construye en el acto 2 |
+| `src/Musicales.AgentGateway` | Gateway LLM local (YARP) que mide skills, herramientas y tokens de Claude Code |
+| `.claude-plugin/marketplace.json` | Este repo es también el marketplace del plugin |
 
-Instalar el harness en cualquier proyecto:
+El musical vive aparte, en `C:\Charlas\musical-plugin`.
+
+## Empezar
+
+Requisitos: .NET SDK 10, Docker, Git Bash (en Windows) y Claude Code.
+
+```powershell
+dotnet build Musicales.slnx                                   # warnings como errores y auditoría de paquetes
+dotnet test Musicales.slnx                                    # arquitectura, aceptación (Testcontainers) y gateway
+dotnet run --project src/Musicales.AppHost --launch-profile http   # API + SQL + gateway + dashboard en http://localhost:15056
+```
+
+Las [issues #1–#3](https://github.com/RubenGomGar/NetCoreConfMadrid2026/issues) son las de la demo: un command, una query y un bug sembrado (un título de solo espacios se acepta).
+
+## El harness: `dotnet-team`
 
 ```text
 /plugin marketplace add RubenGomGar/NetCoreConfMadrid2026
 /plugin install dotnet-team@netcoreconf-2026
 ```
+
+| Comando | Qué hace | Puerta (hook `Stop`) |
+|---|---|---|
+| `/dotnet-team:plan <issue>` | Lee la issue con el MCP de GitHub y escribe `.work/plan.md` en `draft` y los tests de aceptación | Compila, la arquitectura sigue en verde y **todos** los tests nuevos fallan (TDD) |
+| `/dotnet-team:validate [carpeta]` | `facts.sh` calcula los hechos; el agente `platform-reviewer` los contrasta con las reglas de Platform | Cada hallazgo cita una regla existente y el veredicto es coherente |
+| `/dotnet-team:guardrails` | Instala build estricto, `.editorconfig` y tests de arquitectura genéricos en cualquier solución | — (enseña qué falla) |
+
+Cada comando tiene la misma anatomía:
+
+1. **Precondición** (script): si no se cumple, el comando no arranca.
+2. **Contexto precalculado** (script): hechos inyectados antes de que el modelo lea nada.
+3. **Juicio** (modelo, skills y agentes): lo único que no se puede automatizar.
+4. **Puerta de salida** (hook): el turno no termina hasta que el resultado cumple el contrato.
+
+La guardia `PreToolUse` impide tocar los guardarraíles, silenciar avisos o meter connection strings, y en `/plan` solo deja escribir tests. Los scripts del harness tienen sus propios tests: `bash plugins/dotnet-team/tests/run.sh`.
+
+Probado sobre un `dotnet new aspire-starter` recién creado:
+
+- `/validate` devuelve `NO_CUMPLE` con 12 hallazgos.
+- `/guardrails` pone el build en rojo: la plantilla trae paquetes vulnerables.
+- `/plan` se niega a arrancar sobre una base que no compila.
+
+## Observar al agente: hook, gateway y OpenTelemetry
+
+Así es como se monitoriza el uso de skills, pero hecho en .NET con YARP:
+
+```powershell
+./steps/gateway.ps1 -Otel     # claude vía http://localhost:5180 y su telemetría al dashboard de Aspire
+```
+
+| Capa | Quién decide qué se ve | Qué aparece |
+|---|---|---|
+| Hook (`trace.sh`) | El autor del plugin | `.work/trace.jsonl` |
+| Gateway | Quien controla la red | `herramientas [Skill(dotnet-team:dotnet-testing)] · tokens in 4 out 93 cache 55626` y las métricas `gateway.tool_use` y `gateway.tokens` |
+| OpenTelemetry nativo | El propio agente | `claude_code.user_prompt`, `api_request`, `skill_activated`, `tool_result`… |
+
+Detalles del gateway:
+
+- Lee los tokens del SSE mientras pasa, sin retenerlo; si lo retiene, Claude Code se cuelga.
+- Cuenta cada herramienta una sola vez aunque el historial se reenvíe entero.
+- Reenvía `anthropic-beta` intacto, que es lo que necesita la sesión OAuth.
+
+Ve tokens de sesión y código, así que solo escucha en localhost y nunca registra cuerpos ni cabeceras de autenticación.
+
+## Lecciones
+
+1. **Comando = orquestador, skills = expertos, scripts = músculo.** No mezcles roles.
+2. **Los artefactos intermedios son contratos.** El plan y la letra se documentan como una API.
+3. **Puertas humanas antes de lo caro**, no después.
+4. **Lo que se puede calcular, se calcula.** Y lo que se calcula, se testea, incluidos los propios guardarraíles: NetArchTest no veía dentro de las lambdas y un test lo destapó.
+5. **Las reglas se ejecutan, no se recomiendan.** Una skill aconseja; un test de arquitectura y un hook obligan.
+6. **Distribuye como plugin desde el día uno.** Un marketplace cuesta un fichero JSON.
+
+> *The guardrails are the product of phase 2, not a tax on it.* — Platform, Plain Concepts

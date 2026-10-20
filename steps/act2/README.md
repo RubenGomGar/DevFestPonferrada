@@ -69,6 +69,30 @@ Funciona, pero cada persona lo pide distinto y sale distinto. Plan B sin red: `s
 Demo: `/dotnet-team:plan 3` (el bug). Si el modelo escribe un test que ya pasa, la puerta lo devuelve: «Estos tests nuevos ya pasan, así que no describen nada nuevo».
 `bash plugins/dotnet-team/tests/run.sh`: los scripts del harness también tienen tests.
 
+## N5b · Observar al agente: hook, gateway y OpenTelemetry
+
+Cómo monitorizan Claude, Copilot y compañía el uso de skills: un proxy en medio del tráfico al modelo. Aquí, en .NET, con YARP dentro del mismo AppHost.
+
+```powershell
+dotnet run --project src/Musicales.AppHost --launch-profile http   # API + SQL + agent-gateway + dashboard
+./steps/gateway.ps1 -Otel                                          # claude vía http://localhost:5180 + OTel al dashboard
+aspire otel logs --dashboard-url http://localhost:15056 -n 40      # o el dashboard en el navegador
+```
+
+| Capa | Quién decide qué se ve | Qué sale en el dashboard |
+|---|---|---|
+| Hook (`trace.sh`) | El autor del plugin | `.work/trace.jsonl` |
+| Gateway (`Musicales.AgentGateway`) | Quien controla la red | `agent-gateway`: `/v1/messages … herramientas [Skill(dotnet-team:dotnet-testing)] · tokens in 4 out 93 cache 55626` y las métricas `gateway.tool_use{tool,kind,skill}` y `gateway.tokens` |
+| OTel nativo (`CLAUDE_CODE_ENABLE_TELEMETRY`) | El propio agente | `claude-code`: `user_prompt`, `api_request`, `skill_activated`, `tool_result`… |
+
+Cómo funciona el gateway, en tres ficheros de `src/Musicales.AgentGateway/Features/Telemetria/`:
+
+- `AnthropicTraffic`: lee la petición y cuenta solo los `tool_use` cuyo `tool_result` llega en el último mensaje, porque el historial se reenvía entero.
+- `TeeStream` + `SseUsageParser`: leen los tokens del SSE **mientras pasa**, sin retenerlo; si lo bufferizas, Claude Code se cuelga.
+- Se pide `Accept-Encoding: identity` a Anthropic: si no, el SSE llega en gzip.
+
+**Riesgo:** el gateway ve tokens de sesión, prompts y código. Por eso solo escucha en localhost, no registra cuerpos ni cabeceras de autenticación y reenvía `anthropic-beta` intacto (la sesión OAuth lo necesita).
+
 ## N6 · Marketplace
 
 ```powershell
