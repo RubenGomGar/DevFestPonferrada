@@ -9,9 +9,11 @@ Punto de partida, que se cuenta y no se construye: `src/Musicales` sigue Platfor
 
 Prompt: `Implementa la issue #1 del repo`.
 
-Qué se ve: un endpoint con `DbContext` en `Program.cs`, excepciones, sin tests. Y **el build no se queja**, porque nadie ha ejecutado los tests de arquitectura.
+Qué se ve: **sale bien**. Imita la feature `Obras`: capas, `ErrorOr`, 400/404/409 y tests de aceptación. En `.work/trace.jsonl` se ve el coste: busca un `CLAUDE.md` que no existe y se lee el README, toda `Obras` y los tests de arquitectura antes de escribir nada.
 
-**Frase:** «El expertise está en nuestras cabezas, no en el repo».
+**Frase:** «Sin harness, a veces sale bien… porque había un ejemplo que copiar. Ha tardado 3 minutos leyendo el repo, otra vez puede salir distinto, y lo que no está en el código (por qué `ErrorOr`, qué se testea, cuándo un 409) no lo puede deducir».
+
+**Idea de la escalera:** convertir conocimiento implícito y aleatorio en explícito y determinista.
 
 ## N1 · Skill de guardarraíles
 

@@ -109,8 +109,10 @@ Contar la historia con las slides y el repo `C:\Charlas\musical-plugin` abierto 
 ## 15–18 · Puente · vibe coding (vídeo N0)
 
 1. Reproducir el vídeo N0: `Implementa la issue #1 del repo` sin harness.
-2. Señalar en el vídeo: endpoint con `DbContext`, excepciones y ningún test. **Y el build no se queja.**
-3. **Decir:** «El expertise está en nuestras cabezas, no en el repo. Vamos a subir la misma escalera».
+2. Señalar en el vídeo: **sale bien**. Capas, `ErrorOr`, 400/404/409 y tests de aceptación. Ha copiado la feature `Obras`.
+3. Enseñar `.work/trace.jsonl`: busca un `CLAUDE.md` que no existe, lee el README, toda la feature `Obras` y los tests de arquitectura. **Se ha tenido que buscar la vida.**
+4. **Decir:** «Sin harness, a veces sale bien… porque había un ejemplo que copiar. Ha tardado 3 minutos leyendo el repo, otra vez puede salir distinto, y lo que no está en el código (por qué `ErrorOr`, qué se testea, cuándo un 409) no lo puede deducir».
+5. **Transición:** «La escalera va de convertir ese conocimiento implícito y aleatorio en explícito y determinista. Vamos a subirla».
 
 ---
 
@@ -146,7 +148,7 @@ claude --plugin-dir plugins/dotnet-team
    | Qué sale | Qué decir |
    |---|---|
    | `Skill(dotnet-team:dotnet-guardrails)` sin pedirla | «No le he dicho qué reglas usar: se ha cargado sola por su descripción» |
-   | «`Api` no usa EF Core directamente»; slice `ListarObras` con una query en `Application`, `IObrasQueries`, `AsNoTracking` y proyección a DTO | «Esto es lo que el vídeo N0 no tenía» |
+   | «`Api` no usa EF Core directamente»; slice `ListarObras` con una query en `Application`, `IObrasQueries`, `AsNoTracking` y proyección a DTO | «En N0 esto salió porque copió `Obras`. Ahora es una regla escrita, no suerte» |
 
 4. **(1 min) En directo, el test obliga:**
 
