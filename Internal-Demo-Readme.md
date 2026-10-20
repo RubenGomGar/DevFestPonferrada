@@ -237,17 +237,9 @@ claude --plugin-dir plugins/dotnet-team
    | Escritura | Solo `.work/plan.md`, con el test dentro | «Un único fichero que revisar. Solo HTTP y JSON: no conoce tipos de `src/` que aún no existen» |
    | Puerta (segundos) | «dotnet-team: puerta 'plan' superada. ✔ Plan válido: 1 tareas y 1 tests…» | «Comprueba las convenciones de testing del equipo: colección, nombres, ProblemDetails, nada de `Skip`» |
 
-3. **La guardia del plan** (10 s), en la misma sesión:
+3. **La puerta humana.** Abrir `.work/plan.md` en VS Code, enseñar el test dentro y cambiar `status: draft` por `status: approved`. **Decir:** «Como la letra en el musical: una persona aprueba antes de componer».
 
-   ```text
-   Arregla el bug directamente en src/Musicales.Domain/Obras/Obra.cs
-   ```
-
-   Bloqueado: «en /plan solo se escribe .work/plan.md; los tests de aceptación van dentro del plan».
-
-4. **La puerta humana.** Abrir `.work/plan.md` en VS Code, enseñar el test dentro y cambiar `status: draft` por `status: approved`. **Decir:** «Como la letra en el musical: una persona aprueba antes de componer».
-
-5. **La implementación:**
+4. **La implementación:**
 
    ```text
    /dotnet-team:apply
@@ -259,17 +251,9 @@ claude --plugin-dir plugins/dotnet-team
    | Implementación | `IsNullOrEmpty` → `IsNullOrWhiteSpace` en `Obra.cs` | «Una línea, en el dominio, como dice el plan» |
    | **Verde (~20 s)** | «dotnet-team: puerta 'apply' superada. ✔ Implementación válida: … tests en verde (2 del plan)» | «Compila, arquitectura en verde, todos los tests en verde y los del plan sin tocar» |
 
-6. **La guardia de `/apply`** (10 s, solo si vas bien; antes de que termine o en una segunda petición):
+5. La traza, en otra pestaña de T1: `Get-Content .work/trace.jsonl`. `/dotnet-team:plan 3`, `/dotnet-team:apply`, las dos skills y el MCP o `gh`. **Decir:** «El mismo `trace.sh` del musical».
 
-   ```text
-   Cambia el test para que espere 201
-   ```
-
-   Bloqueado: «los tests de aceptación del plan son el contrato: no se cambian para que pasen».
-
-7. La traza, en otra pestaña de T1: `Get-Content .work/trace.jsonl`. `/dotnet-team:plan 3`, `/dotnet-team:apply`, las dos skills y el MCP o `gh`. **Decir:** «El mismo `trace.sh` del musical».
-
-8. Rematar: «Los scripts del harness también tienen tests» y enseñar `bash plugins/dotnet-team/tests/run.sh` (sin ejecutarlo si vas justo).
+6. Rematar: «Los scripts del harness también tienen tests» y enseñar `bash plugins/dotnet-team/tests/run.sh` (sin ejecutarlo si vas justo).
 
 **Plan B:**
 
@@ -441,17 +425,6 @@ claude --plugin-dir plugins/dotnet-team
 - [ ] El plan tiene sentido: si se implementa, arregla el bug
 - [ ] Cronometrado: tarda menos de 5 min en total (si no, en la charla va el vídeo)
 
-Pruebas negativas, en la misma sesión:
-
-| Prompt | Esperado |
-|---|---|
-| «Arregla el bug directamente en src/Musicales.Domain/Obras/Obra.cs» | Bloqueado: «en /plan solo se escribe .work/plan.md; los tests de aceptación van dentro del plan» |
-| «Escribe el test también en tests/» | Bloqueado por la misma guardia |
-| «Añade NoWarn al csproj de tests» | Bloqueado: «no se silencian avisos» |
-| Borra la sección `## Fuera de alcance` de `.work/plan.md` y pídele que termine | La puerta lo devuelve: «falta la sección '## Fuera de alcance'» |
-
-- [ ] La guardia y la puerta bloquean
-
 Limpieza entre intentos:
 
 ```powershell
@@ -491,9 +464,8 @@ Pruebas negativas:
 |---|---|
 | `/dotnet-team:apply` con el plan en `draft` | «PRECONDICIÓN FALLIDA: el plan está en 'draft'…» |
 | `/dotnet-team:apply` con el bug ya arreglado en `src/` (commiteado en una rama de prueba) | «PRECONDICIÓN FALLIDA: estos tests del plan ya pasan…» |
-| Durante `/apply`: «Cambia el test para que espere 201» | Bloqueado: «los tests de aceptación del plan son el contrato» |
 
-- [ ] Las precondiciones, la guardia y la puerta bloquean
+- [ ] Las precondiciones bloquean
 
 Limpieza entre intentos:
 
@@ -595,7 +567,7 @@ Copy-Item .work/trace.jsonl C:\Charlas\NetCoreConfMadrid2026\steps\act1\trace.js
 ## 9 · Vídeos de respaldo
 
 - [ ] N0 · vibe coding de la issue #1 sin harness
-- [ ] N5 · `/plan 3` → aprobar → `/apply`, de rojo a verde, con la guardia bloqueando el cambio del test
+- [ ] N5 · `/plan 3` → aprobar → `/apply`, de rojo a verde
 - [ ] Cierre · `aspire-starter` → install → `/validate` → `/guardrails` → `/plan` rechazado
 
 ---
