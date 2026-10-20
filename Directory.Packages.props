@@ -20,7 +20,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.20.0" />
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
   </ItemGroup>
-  <ItemGroup Label="Transitivos con avisos de seguridad">
+  <ItemGroup Label="Transitive packages with security advisories">
     <PackageVersion Include="MessagePack" Version="2.5.307" />
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
   </ItemGroup>

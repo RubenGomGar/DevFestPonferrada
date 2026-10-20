@@ -1,14 +1,16 @@
 ---
-description: Convierte una issue de GitHub en un plan de vertical slices que respeta los guardarraíles, con los tests de aceptación (TDD) escritos dentro del propio plan. No implementa.
-argument-hint: "<número de issue>"
+description: Turns a GitHub issue into a vertical-slice plan that respects the guardrails, with the acceptance tests (TDD) written inside the plan itself. Does not implement.
+argument-hint: "<issue number>"
 allowed-tools: Read, Glob, Grep, Write(.work/**), Edit(.work/**), Skill, Bash(gh issue view:*), mcp__plugin_dotnet-team_github__issue_read
 ---
 
-# /plan · de una issue a un plan con sus tests
+# /plan · from an issue to a plan with its tests
 
-## Contexto precalculado
+Reply to the user in the language they write in. Plan headings and field names stay exactly as in the template.
 
-Lo ha generado un script antes de que leyeras nada. Úsalo; no lo vuelvas a descubrir.
+## Precomputed context
+
+A script generated this before you read anything. Use it; do not rediscover it.
 
 !`bash "${CLAUDE_PLUGIN_ROOT}/scripts/ctx/plan.sh"`
 
@@ -16,26 +18,26 @@ Lo ha generado un script antes de que leyeras nada. Úsalo; no lo vuelvas a desc
 
 $ARGUMENTS
 
-## Qué haces
+## What you do
 
-1. Si el contexto dice **PRECONDICIÓN FALLIDA**, para: explica el motivo en una frase y no sigas.
-2. Si no hay número de issue, pide uno en una frase.
-3. Lee la issue del repositorio GitHub del contexto con el MCP de GitHub (`issue_read`). Si el MCP no está disponible, usa `gh issue view <n> --json title,body,labels`.
-4. Carga las skills `dotnet-guardrails` (cómo se construye aquí) y `dotnet-testing` (qué test y dónde). Úsalas; no reimplementes lo que dicen.
-5. Lee el slice de referencia del contexto y el código que la issue toque. Solo lectura.
-6. Escribe `.work/plan.md` copiando la estructura exacta de `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`:
-   - `issue` es el número; `status: draft`. La aprobación es humana: nunca escribes `approved`.
-   - Una tarea por slice: `### T<n> · <NombreSlice> · command|query`, con `Capas`, `Ficheros`, `Contrato HTTP`, `Errores` y `Tests`.
-   - En `Guardarraíles aplicados`, las reglas concretas que condicionan este plan.
-7. Escribe los tests de aceptación **dentro del plan**, en `## Tests de aceptación`: por cada fichero nuevo, un encabezado `` #### `tests/<App>.AcceptanceTests/Features/<Feature>/<Clase>Tests.cs` `` y debajo el fichero completo en un bloque `csharp`. No creas ficheros en `tests/`: `/dotnet-team:apply` los copia y comprueba que están en rojo antes de implementar.
-   - Solo HTTP y JSON; ningún tipo de `src/` que no exista todavía. Tienen que compilar tal cual.
-   - Tienen que **fallar todos** hoy: describen comportamiento que aún no existe. Si es un bug, un test que lo reproduzca.
-8. Solo escribes `.work/plan.md`: ni `src/`, ni `tests/`, ni guardarraíles. Un hook lo impide; si te bloquea, no lo rodees.
+1. If the context says **PRECONDITION FAILED**, stop: explain the reason in one sentence and go no further.
+2. If there is no issue number, ask for one in one sentence.
+3. Read the issue from the context's GitHub repository with the GitHub MCP (`issue_read`). If the MCP is not available, use `gh issue view <n> --json title,body,labels`.
+4. Load the `dotnet-guardrails` (how things are built here) and `dotnet-testing` (which test and where) skills. Use them; do not reimplement what they say.
+5. Read the reference slice from the context and the code the issue touches. Read-only.
+6. Write `.work/plan.md` copying the exact structure of `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`:
+   - `issue` is the number; `status: draft`. Approval is human: you never write `approved`.
+   - One task per slice: `### T<n> · <SliceName> · command|query`, with `Layers`, `Files`, `HTTP contract`, `Errors` and `Tests`.
+   - Under `Guardrails applied`, the specific rules that shape this plan.
+7. Write the acceptance tests **inside the plan**, under `## Acceptance tests`: for each new file, a heading `` #### `tests/<App>.AcceptanceTests/Features/<Feature>/<Class>Tests.cs` `` and below it the full file in a `csharp` block. Do not create files in `tests/`: `/dotnet-team:apply` copies them and checks they are red before implementing.
+   - HTTP and JSON only; no `src/` type that does not exist yet. They must compile as they are.
+   - **All of them must fail** today: they describe behavior that does not exist yet. If it is a bug, a test that reproduces it.
+8. You only write `.work/plan.md`: not `src/`, not `tests/`, not guardrails. A hook prevents it; if it blocks you, do not work around it.
 
-## Al terminar
+## When you finish
 
-Resume en cinco líneas como máximo: tareas, tests y supuestos importantes. Cierra con:
+Summarize in at most five lines: tasks, tests and important assumptions. End with:
 
-> Revisa `.work/plan.md`: los tests están dentro. Si te encaja, cambia `status: draft` por `status: approved` y lanza `/dotnet-team:apply`.
+> Review `.work/plan.md`: the tests are inside. If you are happy with it, change `status: draft` to `status: approved` and run `/dotnet-team:apply`.
 
-Cuando termines, una puerta automática comprueba la forma del plan y que sus tests siguen las convenciones de `dotnet-testing` (colección compartida, nombres, aserciones, ProblemDetails, sin tipos de `src/` que no existen). Si te bloquea, corrige según el motivo y vuelve a terminar.
+When you finish, an automatic gate checks the shape of the plan and that its tests follow the `dotnet-testing` conventions (shared collection, names, assertions, ProblemDetails, no `src/` types that do not exist). If it blocks you, fix according to the reason and finish again.

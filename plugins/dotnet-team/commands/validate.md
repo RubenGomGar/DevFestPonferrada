@@ -1,28 +1,30 @@
 ---
-description: Valida una carpeta .NET frente a las buenas prácticas de Platform y deja un informe con hallazgos en .work/validate.md. Solo lectura.
-argument-hint: "[carpeta, por defecto la raíz]"
+description: Validates a .NET folder against the Platform best practices and writes a findings report to .work/validate.md. Read-only.
+argument-hint: "[folder, defaults to the root]"
 allowed-tools: Read, Glob, Grep, Write(.work/**), Bash(bash:*), Agent
 ---
 
-# /validate · ¿cumple esta carpeta con Platform?
+# /validate · does this folder comply with Platform?
 
-## Carpeta
+Reply to the user in the language they write in. The `.work/validate.md` keys and verdicts stay exactly as specified.
+
+## Folder
 
 $ARGUMENTS
 
-## Qué haces
+## What you do
 
-1. Ejecuta el script de hechos sobre la carpeta (si está vacía, `.`):
+1. Run the facts script on the folder (if empty, `.`):
 
-   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/validate/facts.sh" <carpeta>`
+   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/validate/facts.sh" <folder>`
 
-   Si falla, para y explica el motivo en una frase.
-2. Delega en el agente `dotnet-team:platform-reviewer`. Pásale la carpeta, la ruta de las reglas (`${CLAUDE_PLUGIN_ROOT}/references/platform-rules.md`) y la tabla de hechos completa, tal cual. No revises tú: el agente es el experto.
-3. Escribe su respuesta, sin tocarla, en `.work/validate.md`.
-4. No modificas nada más. Un hook lo impide.
+   If it fails, stop and explain the reason in one sentence.
+2. Delegate to the `dotnet-team:platform-reviewer` agent. Pass it the folder, the rules path (`${CLAUDE_PLUGIN_ROOT}/references/platform-rules.md`) and the full facts table, as is. Do not review yourself: the agent is the expert.
+3. Write its answer, untouched, to `.work/validate.md`.
+4. You modify nothing else. A hook prevents it.
 
-## Al terminar
+## When you finish
 
-Resume en cuatro líneas como máximo: veredicto, número de hallazgos por severidad y los dos más importantes. Si hay hallazgos de capas, build o tests, sugiere `/dotnet-team:guardrails`.
+Summarize in at most four lines: verdict, number of findings per severity and the two most important ones. If there are layer, build or test findings, suggest `/dotnet-team:guardrails`.
 
-Cuando termines, una puerta automática comprueba que cada hallazgo cita una regla existente, con severidad válida y un fichero que existe, y que el veredicto es coherente.
+When you finish, an automatic gate checks that each finding cites an existing rule, with a valid severity and a file that exists, and that the verdict is consistent.

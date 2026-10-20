@@ -1,0 +1,10 @@
+@api = http://localhost:5280
+
+POST {{api}}/api/shows
+Content-Type: application/json
+
+{ "title": "Rasputin", "composer": "Boney M." }
+
+###
+
+GET {{api}}/api/shows/00000000-0000-0000-0000-000000000000

@@ -18,19 +18,19 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Build (warnings como errores, auditoría NuGet)
-        run: dotnet build Musicales.slnx
+      - name: Build (warnings as errors, NuGet audit)
+        run: dotnet build Musicals.slnx
 
-      - name: Paquetes vulnerables
+      - name: Vulnerable packages
         run: |
-          dotnet list Musicales.slnx package --vulnerable --include-transitive | tee vulnerable.txt
+          dotnet list Musicals.slnx package --vulnerable --include-transitive | tee vulnerable.txt
           ! grep -q "has the following vulnerable packages" vulnerable.txt
 
-      - name: Tests de arquitectura
-        run: dotnet test tests/Musicales.ArchitectureTests --no-build
+      - name: Architecture tests
+        run: dotnet test tests/Musicals.ArchitectureTests --no-build
 
-      - name: Tests de aceptación (Testcontainers)
-        run: dotnet test tests/Musicales.AcceptanceTests --no-build
+      - name: Acceptance tests (Testcontainers)
+        run: dotnet test tests/Musicals.AcceptanceTests --no-build
 
-      - name: Tests del harness
+      - name: Harness tests
         run: bash plugins/dotnet-team/tests/run.sh

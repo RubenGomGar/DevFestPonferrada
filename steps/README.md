@@ -26,7 +26,7 @@
 ## Antes de subir al escenario
 
 - [ ] Docker arrancado y la imagen `mcr.microsoft.com/mssql/server:2022-latest` descargada.
-- [ ] `dotnet build Musicales.slnx && dotnet test Musicales.slnx` en verde (calienta NuGet y Testcontainers).
+- [ ] `dotnet build Musicals.slnx && dotnet test Musicals.slnx` en verde (calienta NuGet y Testcontainers).
 - [ ] `gh auth status` correcto (el MCP de GitHub del plugin reutiliza esa sesión).
 - [ ] Issues #1–#3 creadas y su copia en `steps/cache/` (plan B sin red).
 - [ ] `./steps/step.ps1 n0` ejecutado: rama `demo-live` sin plugin.

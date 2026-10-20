@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Hechos deterministas de una carpeta .NET para /dotnet-team:validate.
-# El modelo no los descubre: los lee. Uso: facts.sh [carpeta]
+# Qué hace: calcula hechos deterministas de una carpeta .NET (capas, referencias, paquetes, build, Aspire, seguridad...) y los imprime como tabla markdown. Uso: facts.sh [carpeta]
+# Para qué sirve: lo ejecuta /dotnet-team:validate para que el modelo lea los hechos en vez de descubrirlos; además activa la fase `validate` para la guardia y la puerta.
 source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 target="${1:-.}"
 target="${target//\\//}"
-[ -d "$target" ] || { echo "✖ La carpeta '$target' no existe."; exit 1; }
+[ -d "$target" ] || { echo "✖ Folder '$target' does not exist."; exit 1; }
 root="$(cd "$target" && pwd)"
 
 phase_set validate
@@ -21,9 +21,9 @@ row() { printf '| %s | %s | %s |\n' "$1" "$2" "$3"; }
 csprojs="$(find "$root" -name '*.csproj' -not -path '*/bin/*' -not -path '*/obj/*' -not -path '*/node_modules/*' | sort)"
 props="$(find "$root" -maxdepth 2 -name Directory.Build.props | head -n1)"
 
-echo "# Hechos de \`$root\`"
+echo "# Facts for \`$root\`"
 echo
-echo "| Hecho | Valor | Evidencia |"
+echo "| Fact | Value | Evidence |"
 echo "|---|---|---|"
 row solution "$(find "$root" -maxdepth 2 \( -name '*.slnx' -o -name '*.sln' \) | wc -l | tr -d ' ')" "$(find "$root" -maxdepth 2 \( -name '*.slnx' -o -name '*.sln' \) | list)"
 row projects "$(printf '%s\n' "$csprojs" | grep -c .)" "$(printf '%s\n' "$csprojs" | list 20)"
@@ -32,7 +32,7 @@ layers=""
 for l in Domain Application Infrastructure Api; do
   printf '%s\n' "$csprojs" | grep -qE "\.$l\.csproj$" && layers="$layers $l"
 done
-row layers "${layers:- ninguna}" "proyectos *.Domain/*.Application/*.Infrastructure/*.Api"
+row layers "${layers:- none}" "projects *.Domain/*.Application/*.Infrastructure/*.Api"
 
 refs="$(for p in $csprojs; do grep -oE 'ProjectReference Include="[^"]+"' "$p" | sed -E "s#.*Include=\"##; s#\"##; s#.*[\\\\/]##; s#^#$(basename "$p" .csproj) -> #"; done)"
 row project_references "$(printf '%s\n' "$refs" | grep -c .)" "$(printf '%s\n' "$refs" | paste -sd';' | sed 's/;/; /g')"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# PreToolUse (Edit|Write): decide si una escritura está permitida ANTES de que ocurra.
-# Exit 2 bloquea la herramienta y el texto de stderr llega al agente como motivo.
+# Qué hace: decide si una escritura (Edit|Write) está permitida ANTES de que ocurra: protege los guardarraíles, impide silenciar avisos y connection strings en appsettings, y limita qué se escribe según la fase activa (plan, apply, validate).
+# Para qué sirve: es el hook PreToolUse del plugin; con exit 2 bloquea la herramienta y el texto de stderr le llega al agente como motivo.
 source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 input="$(cat)"
@@ -11,39 +11,39 @@ phase="$(phase_get)"
 
 deny() {
   echo "dotnet-team guard: $1" >&2
-  echo "Fichero: $rel" >&2
+  echo "File: $rel" >&2
   exit 2
 }
 
 case "$rel" in .work/*) exit 0 ;; esac
 
 if is_guardrail_path "$rel"; then
-  deny "es un guardarraíl (build, estilo o arquitectura). Arregla el código, no la regla. Cambiar la regla es una decisión humana."
+  deny "it is a guardrail (build, style or architecture). Fix the code, not the rule. Changing the rule is a human decision."
 fi
 
 if printf '%s' "$input" | grep -Eq '#pragma warning disable|<NoWarn>|SuppressMessage\('; then
-  deny "no se silencian avisos del compilador ni de analizadores. Corrige la causa."
+  deny "compiler and analyzer warnings are not silenced. Fix the cause."
 fi
 
 case "$rel" in
   *appsettings*.json)
     if printf '%s' "$input" | grep -Eiq '(Server|Data Source|User Id|Password|AccountKey)='; then
-      deny "las connection strings no van en appsettings. Aspire las inyecta por nombre."
+      deny "connection strings do not go in appsettings. Aspire injects them by name."
     fi ;;
 esac
 
 case "$phase" in
   plan)
-    deny "en /plan solo se escribe .work/plan.md; los tests de aceptación van dentro del plan. El plan no implementa." ;;
+    deny "in /plan only .work/plan.md is written; the acceptance tests go inside the plan. The plan does not implement." ;;
   apply)
     case "$rel" in
       src/*|tests/*UnitTests*/*) ;;
       tests/*AcceptanceTests*/*)
-        deny "los tests de aceptación del plan son el contrato: no se cambian para que pasen. Si están mal, vuelve a /dotnet-team:plan." ;;
-      *) deny "en /apply solo se escribe en src/ y en tests unitarios." ;;
+        deny "the plan's acceptance tests are the contract: they are not changed to make them pass. If they are wrong, go back to /dotnet-team:plan." ;;
+      *) deny "in /apply only src/ and unit tests are written." ;;
     esac ;;
   validate)
-    deny "/validate es de solo lectura: el informe va en .work/validate.md." ;;
+    deny "/validate is read-only: the report goes in .work/validate.md." ;;
 esac
 
 exit 0

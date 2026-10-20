@@ -1,47 +1,47 @@
 ---
 issue: 0
-feature: kebab-case-del-nombre
+feature: kebab-case-name
 status: draft
 ---
 
-# Plan: título corto de la issue
+# Plan: short issue title
 
-## Objetivo
+## Goal
 
-Una o dos frases con el comportamiento observable que cambia para quien usa la API.
+One or two sentences with the observable behavior that changes for whoever uses the API.
 
-## Guardarraíles aplicados
+## Guardrails applied
 
-- Cada regla de `dotnet-guardrails` que condiciona este plan, en una línea, y cómo se respeta.
+- Each `dotnet-guardrails` rule that shapes this plan, in one line, and how it is respected.
 
-## Supuestos
+## Assumptions
 
-- Cada ambigüedad de la issue, resuelta en una línea. Si no hay, escribe "Ninguno".
+- Each ambiguity in the issue, resolved in one line. If there are none, write "None".
 
-## Tareas
+## Tasks
 
-### T1 · NombreDelSlice · command
+### T1 · SliceName · command
 
-- Capas: Domain, Application, Infrastructure, Api
-- Ficheros: `src/<App>.Application/Features/<Feature>/<Slice>/`, `src/<App>.Api/Features/<Feature>/<Feature>Endpoints.cs`
-- Contrato HTTP: `POST /api/<recurso>` → 201 | 400 | 404
-- Errores: `<Agregado>.<Motivo>` (Validation), `<Agregado>.NoEncontrada` (NotFound)
-- Tests: `<Clase>Tests.<Caso>_..._devuelve_201`, `..._devuelve_400`, `..._devuelve_404`
+- Layers: Domain, Application, Infrastructure, Api
+- Files: `src/<App>.Application/Features/<Feature>/<Slice>/`, `src/<App>.Api/Features/<Feature>/<Feature>Endpoints.cs`
+- HTTP contract: `POST /api/<resource>` → 201 | 400 | 404
+- Errors: `<Aggregate>.<Reason>` (Validation), `<Aggregate>.NotFound` (NotFound)
+- Tests: `<Class>Tests.<Case>_..._returns_201`, `..._returns_400`, `..._returns_404`
 
-## Tests de aceptación
+## Acceptance tests
 
-| Test | Fichero | Por qué falla hoy |
+| Test | File | Why it fails today |
 |---|---|---|
-| `Caso_escenario_resultado` | `tests/<App>.AcceptanceTests/Features/<Feature>/<Clase>Tests.cs` | El endpoint no existe (404) |
+| `Case_scenario_result` | `tests/<App>.AcceptanceTests/Features/<Feature>/<Class>Tests.cs` | The endpoint does not exist (404) |
 
-Un bloque por fichero nuevo, con su ruta en el encabezado. `/apply` lo copia tal cual a esa ruta y comprueba que falla antes de implementar.
+One block per new file, with its path in the heading. `/apply` copies it as is to that path and checks that it fails before implementing.
 
-#### `tests/<App>.AcceptanceTests/Features/<Feature>/<Clase>Tests.cs`
+#### `tests/<App>.AcceptanceTests/Features/<Feature>/<Class>Tests.cs`
 
 ```csharp
-// El fichero completo: usings, namespace y clase.
+// The full file: usings, namespace and class.
 ```
 
-## Fuera de alcance
+## Out of scope
 
-- Lo que alguien podría esperar y no se hace en este plan.
+- What someone might expect and is not done in this plan.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Hook de trazas: una línea JSON por evento en .work/trace.jsonl.
-# Autocontenido a propósito: es el mismo fichero en el plugin musical y en dotnet-team.
+# Qué hace: añade una línea JSON por evento (prompt, skill, agente, MCP, fin de subagente) a .work/trace.jsonl.
+# Para qué sirve: es el hook UserPromptSubmit/PostToolUse/SubagentStop que deja la traza de lo que se invoca. Autocontenido a propósito: es el mismo fichero en el plugin musical y en dotnet-team.
 input="$(cat)"
 dir="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 dir="${dir//\\//}/.work"

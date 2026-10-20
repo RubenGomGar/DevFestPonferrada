@@ -1,66 +1,66 @@
 ---
 name: dotnet-guardrails
-description: Guardarraíles de backend .NET de Platform (Clean Architecture, vertical slices, CQS, errores como valores con ErrorOr, EF Core, Aspire, seguridad). Úsala siempre que diseñes, planifiques, escribas o revises código C# de backend.
+description: Platform .NET backend guardrails (Clean Architecture, vertical slices, CQS, errors as values with ErrorOr, EF Core, Aspire, security). Use it whenever you design, plan, write or review backend C# code.
 user-invocable: false
 ---
 
-# Guardarraíles de backend .NET
+# .NET backend guardrails
 
-Fuente: https://platform.plainconcepts.com/docs/backend. Si el código del repositorio y esta skill discrepan, manda el slice de referencia del repositorio y lo señalas.
+Source: https://platform.plainconcepts.com/docs/backend. If the repository code and this skill disagree, the repository's reference slice wins and you point it out.
 
-Los marcados con 🔒 los comprueba código (tests de arquitectura, build o hooks): si los rompes, falla algo. Los demás dependen de tu criterio.
+Those marked with 🔒 are checked by code (architecture tests, build or hooks): if you break them, something fails. The rest depend on your judgment.
 
-## Capas
+## Layers
 
-Las dependencias apuntan hacia dentro.
+Dependencies point inwards.
 
-| Proyecto | Contiene | Puede depender de |
+| Project | Contains | May depend on |
 |---|---|---|
-| `*.Domain` | Entidades, value objects, errores de dominio | `ErrorOr` |
-| `*.Application` | Casos de uso (commands y queries), DTOs, interfaces que necesita | `Domain` |
-| `*.Infrastructure` | EF Core e integraciones; implementa las interfaces de `Application` | `Application` |
-| `*.Api` | Endpoints minimal API por feature; raíz de composición | todas |
+| `*.Domain` | Entities, value objects, domain errors | `ErrorOr` |
+| `*.Application` | Use cases (commands and queries), DTOs, the interfaces it needs | `Domain` |
+| `*.Infrastructure` | EF Core and integrations; implements the `Application` interfaces | `Application` |
+| `*.Api` | Minimal API endpoints per feature; composition root | all |
 
-- 🔒 `Domain` no depende de nadie. `Application` no conoce EF Core ni ASP.NET Core. `Api` no usa EF Core directamente.
-- 🔒 Nada de carpetas técnicas genéricas (`Services`, `Repositories`, `Helpers`, `Managers`).
+- 🔒 `Domain` depends on nobody. `Application` knows neither EF Core nor ASP.NET Core. `Api` does not use EF Core directly.
+- 🔒 No generic technical folders (`Services`, `Repositories`, `Helpers`, `Managers`).
 
-## Vertical slices y CQS
+## Vertical slices and CQS
 
-- Todo un caso de uso vive junto: `Features/<Feature>/<Slice>/`.
-- Un command cambia estado y devuelve lo mínimo (normalmente el id). Una query lee y nunca muta.
-- 🔒 Handlers `sealed` en `Features`, registrados en DI e inyectados en el endpoint. Sin mediador hasta que duela.
+- A whole use case lives together: `Features/<Feature>/<Slice>/`.
+- A command changes state and returns the minimum (usually the id). A query reads and never mutates.
+- 🔒 `sealed` handlers in `Features`, registered in DI and injected into the endpoint. No mediator until it hurts.
 
-## Errores como valores
+## Errors as values
 
-- 🔒 `Handle` devuelve `Task<ErrorOr<T>>`. Las excepciones son para lo excepcional, no para control de flujo.
-- Códigos `<Agregado>.<Motivo>` en una clase estática `<Agregado>Errors` del dominio.
-- El endpoint traduce a ProblemDetails (RFC 7807) con `ToProblem()`: Validation → 400, NotFound → 404, Conflict → 409.
+- 🔒 `Handle` returns `Task<ErrorOr<T>>`. Exceptions are for the exceptional, not for control flow.
+- Codes `<Aggregate>.<Reason>` in a static `<Aggregate>Errors` class in the domain.
+- The endpoint translates to ProblemDetails (RFC 7807) with `ToProblem()`: Validation → 400, NotFound → 404, Conflict → 409.
 
-## Dominio
+## Domain
 
-- Fábrica estática que devuelve `ErrorOr<Entidad>` y valida invariantes; constructor privado.
-- Fechas desde `TimeProvider` inyectado; nunca `DateTime.Now` ni `DateTime.UtcNow`.
+- Static factory that returns `ErrorOr<Entity>` and validates invariants; private constructor.
+- Dates from an injected `TimeProvider`; never `DateTime.Now` or `DateTime.UtcNow`.
 
-## Datos con EF Core
+## Data with EF Core
 
-- Interfaces en `Application` (`I<Agregado>Repository` escribe, `I<Feature>Queries` lee); `Infrastructure` las implementa.
-- Lecturas con `AsNoTracking()` y proyección a DTO con `Select`. Evita N+1 con `Include` explícito o consultas divididas.
-- Configuración con `IEntityTypeConfiguration<T>` en `Persistence/Configurations/`.
+- Interfaces in `Application` (`I<Aggregate>Repository` writes, `I<Feature>Queries` reads); `Infrastructure` implements them.
+- Reads with `AsNoTracking()` and DTO projection with `Select`. Avoid N+1 with explicit `Include` or split queries.
+- Configuration with `IEntityTypeConfiguration<T>` in `Persistence/Configurations/`.
 
 ## Aspire
 
-- Un único AppHost; sin docker-compose.
-- Contenedores con estado: `ContainerLifetime.Persistent` y `.WithDataVolume()`.
-- `.WaitFor(...)` en cada referencia.
-- Todo servicio llama a `AddServiceDefaults()`.
-- 🔒 Las connection strings llegan por nombre desde el AppHost; nunca en `appsettings*.json`.
+- A single AppHost; no docker-compose.
+- Stateful containers: `ContainerLifetime.Persistent` and `.WithDataVolume()`.
+- `.WaitFor(...)` on every reference.
+- Every service calls `AddServiceDefaults()`.
+- 🔒 Connection strings arrive by name from the AppHost; never in `appsettings*.json`.
 
-## Seguridad y observabilidad
+## Security and observability
 
-- `ILogger<T>` con plantillas de mensaje; nunca secretos ni datos personales en logs.
-- `X-Robots-Tag: noindex, nofollow` en todas las respuestas, desde un middleware registrado primero.
+- `ILogger<T>` with message templates; never secrets or personal data in logs.
+- `X-Robots-Tag: noindex, nofollow` on every response, from a middleware registered first.
 
-## Higiene de build
+## Build hygiene
 
-- 🔒 `Directory.Build.props` (nullable, warnings como errores, analizadores) y `Directory.Packages.props` (versiones centralizadas). No se tocan para que algo compile.
-- 🔒 Nunca `#pragma warning disable`, `NoWarn` ni `SuppressMessage`. Arregla la causa.
+- 🔒 `Directory.Build.props` (nullable, warnings as errors, analyzers) and `Directory.Packages.props` (centralized versions). They are not touched to make something compile.
+- 🔒 Never `#pragma warning disable`, `NoWarn` or `SuppressMessage`. Fix the cause.

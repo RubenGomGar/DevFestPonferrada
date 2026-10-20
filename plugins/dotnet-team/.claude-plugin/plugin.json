@@ -3,7 +3,7 @@
   "name": "dotnet-team",
   "displayName": ".NET Team Harness",
   "version": "0.1.0",
-  "description": "El expertise .NET del equipo como harness: guardarraíles de Platform, /plan desde una issue con los tests dentro del plan, /apply de rojo a verde, /validate frente a Platform y hooks deterministas.",
+  "description": "The team's .NET expertise as a harness: Platform guardrails, /plan from an issue with the tests inside the plan, /apply from red to green, /validate against Platform and deterministic hooks.",
   "author": {
     "name": "RubenGomGar"
   },

@@ -1,14 +1,16 @@
 ---
-description: Convierte una issue de GitHub en un plan de vertical slices que respeta los guardarraíles, con los tests de aceptación (TDD) escritos dentro del propio plan. No implementa.
-argument-hint: "<número de issue>"
+description: Turns a GitHub issue into a vertical-slice plan that respects the guardrails, with the acceptance tests (TDD) written inside the plan itself. Does not implement.
+argument-hint: "<issue number>"
 allowed-tools: Read, Glob, Grep, Write(.work/**), Edit(.work/**), Skill, Bash(gh issue view:*), mcp__plugin_dotnet-team_github__issue_read
 ---
 
-# /plan · de una issue a un plan con sus tests
+# /plan · from an issue to a plan with its tests
 
-## Contexto precalculado
+Reply to the user in the language they write in. Plan headings and field names stay exactly as in the template.
 
-Lo ha generado un script antes de que leyeras nada. Úsalo; no lo vuelvas a descubrir.
+## Precomputed context
+
+A script generated this before you read anything. Use it; do not rediscover it.
 
 !`bash "${CLAUDE_PLUGIN_ROOT}/scripts/ctx/plan.sh"`
 
@@ -16,22 +18,22 @@ Lo ha generado un script antes de que leyeras nada. Úsalo; no lo vuelvas a desc
 
 $ARGUMENTS
 
-## Qué haces
+## What you do
 
-1. Si el contexto dice **PRECONDICIÓN FALLIDA**, para: explica el motivo en una frase y no sigas.
-2. Si no hay número de issue, pide uno en una frase.
-3. Lee la issue del repositorio GitHub del contexto con el MCP de GitHub (`issue_read`). Si el MCP no está disponible, usa `gh issue view <n> --json title,body,labels`.
-4. Carga la skill `dotnet-guardrails` (cómo se construye aquí). Úsala; no reimplementes lo que dice.
-5. Lee el slice de referencia del contexto y el código que la issue toque. Solo lectura.
-6. Escribe `.work/plan.md` copiando la estructura exacta de `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`:
-   - `issue` es el número; `status: draft`. La aprobación es humana: nunca escribes `approved`.
-   - Una tarea por slice: `### T<n> · <NombreSlice> · command|query`, con `Capas`, `Ficheros`, `Contrato HTTP`, `Errores` y `Tests`.
-   - En `Guardarraíles aplicados`, las reglas concretas que condicionan este plan.
-7. Escribe los tests de aceptación **dentro del plan**: un encabezado `` #### `tests/<App>.AcceptanceTests/Features/<Feature>/<Clase>Tests.cs` `` por fichero y debajo el fichero completo en un bloque `csharp`. Tienen que compilar y **fallar todos** hoy.
-8. Solo escribes `.work/plan.md`.
+1. If the context says **PRECONDITION FAILED**, stop: explain the reason in one sentence and go no further.
+2. If there is no issue number, ask for one in one sentence.
+3. Read the issue from the context's GitHub repository with the GitHub MCP (`issue_read`). If the MCP is not available, use `gh issue view <n> --json title,body,labels`.
+4. Load the `dotnet-guardrails` skill (how things are built here). Use it; do not reimplement what it says.
+5. Read the reference slice from the context and the code the issue touches. Read-only.
+6. Write `.work/plan.md` copying the exact structure of `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`:
+   - `issue` is the number; `status: draft`. Approval is human: you never write `approved`.
+   - One task per slice: `### T<n> · <SliceName> · command|query`, with `Layers`, `Files`, `HTTP contract`, `Errors` and `Tests`.
+   - Under `Guardrails applied`, the specific rules that shape this plan.
+7. Write the acceptance tests **inside the plan**: one heading `` #### `tests/<App>.AcceptanceTests/Features/<Feature>/<Class>Tests.cs` `` per file and below it the full file in a `csharp` block. They must compile and **all fail** today.
+8. You only write `.work/plan.md`.
 
-## Al terminar
+## When you finish
 
-Resume en cinco líneas como máximo: tareas, tests y supuestos importantes. Cierra con:
+Summarize in at most five lines: tasks, tests and important assumptions. End with:
 
-> Revisa `.work/plan.md`: los tests están dentro. Si te encaja, cambia `status: draft` por `status: approved`.
+> Review `.work/plan.md`: the tests are inside. If you are happy with it, change `status: draft` to `status: approved`.

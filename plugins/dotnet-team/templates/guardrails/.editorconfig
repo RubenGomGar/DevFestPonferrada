@@ -15,7 +15,7 @@ csharp_style_var_for_built_in_types = true:suggestion
 dotnet_style_qualification_for_field = false:warning
 dotnet_sort_system_directives_first = true
 
-# Los tests se nombran como frases: Metodo_Escenario_Resultado.
+# Tests are named like sentences: Method_Scenario_Result.
 [tests/**.cs]
 dotnet_diagnostic.CA1707.severity = none
 dotnet_diagnostic.CA1515.severity = none

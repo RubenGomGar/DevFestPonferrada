@@ -1,39 +1,39 @@
 ---
 name: dotnet-testing
-description: Qué tests escribir y dónde en un backend .NET según el trofeo de testing de Platform (integración vía HTTP con WebApplicationFactory y Testcontainers, unitarios solo con ramas reales, un test de regresión por bug). Úsala al escribir, planificar o revisar tests.
+description: Which tests to write and where in a .NET backend according to the Platform testing trophy (integration over HTTP with WebApplicationFactory and Testcontainers, unit tests only for real branches, one regression test per bug). Use it when writing, planning or reviewing tests.
 user-invocable: false
 ---
 
-# Tests que fijan comportamiento
+# Tests that pin down behavior
 
-Fuente: https://platform.plainconcepts.com/docs/backend (Testing). Un test solo vale si falla cuando el comportamiento cambia.
+Source: https://platform.plainconcepts.com/docs/backend (Testing). A test is only worth it if it fails when the behavior changes.
 
-## El trofeo
+## The trophy
 
-| Tipo | Cuándo | Dónde |
+| Type | When | Where |
 |---|---|---|
-| Análisis estático | Siempre: compilador, analizadores, tests de arquitectura | `Directory.Build.props`, `tests/*.ArchitectureTests/` (🔒 no se tocan) |
-| **Integración (la mayoría)** | Todo contrato HTTP: éxito y cada error | `tests/*.AcceptanceTests/Features/<Feature>/` |
-| Unitarios | Solo lógica con ramas reales: reglas de dominio, cálculos, parsers, máquinas de estado | `tests/*.UnitTests/` |
-| End-to-end | Pocos, solo recorridos críticos | — |
+| Static analysis | Always: compiler, analyzers, architecture tests | `Directory.Build.props`, `tests/*.ArchitectureTests/` (🔒 not touched) |
+| **Integration (most of them)** | Every HTTP contract: success and each error | `tests/*.AcceptanceTests/Features/<Feature>/` |
+| Unit | Only logic with real branches: domain rules, calculations, parsers, state machines | `tests/*.UnitTests/` |
+| End-to-end | Few, only critical journeys | — |
 
-- Cada bug corregido lleva **un** test de regresión que lo reproduce.
-- No se testean constantes, valores por defecto, mocks de tu propio código ni detalles de markup.
+- Every fixed bug gets **one** regression test that reproduces it.
+- Do not test constants, default values, mocks of your own code or markup details.
 
-## Tests de aceptación (integración)
+## Acceptance tests (integration)
 
-- Usa la colección compartida del proyecto (en Musicales, `[Collection(ApiFixture.Name)]` con `MusicalesApiFactory`) para reutilizar el SQL Server de Testcontainers.
-- Se habla **solo HTTP y JSON**: `PostAsJsonAsync`, `GetAsync`, `ReadFromJsonAsync<JsonElement>`. No se referencian tipos de `src/` que todavía no existen; así el test compila antes de que exista la implementación.
-- Por endpoint nuevo, como mínimo: el caso de éxito y cada error del contrato (400 con su código, 404, 409).
-- Los errores se comprueban leyendo el ProblemDetails (`title` o la clave de `errors`), no solo el status.
+- Use the project's shared collection (in Musicals, `[Collection(ApiFixture.Name)]` with `MusicalsApiFactory`) to reuse the Testcontainers SQL Server.
+- They speak **HTTP and JSON only**: `PostAsJsonAsync`, `GetAsync`, `ReadFromJsonAsync<JsonElement>`. No `src/` types that do not exist yet are referenced; that way the test compiles before the implementation exists.
+- For each new endpoint, at least: the success case and each error in the contract (400 with its code, 404, 409).
+- Errors are checked by reading the ProblemDetails (`title` or the `errors` key), not just the status.
 
-## Convenciones
+## Conventions
 
-- Nombre: `<Caso>_<Escenario>_<Resultado>`, por ejemplo `AnadirNumero_a_obra_inexistente_devuelve_404`.
-- Arrange, Act, Assert separados por una línea en blanco. Un comportamiento por test.
-- Aserciones con Shouldly sobre lo observable: status, cuerpo, cabeceras, estado leído de vuelta por la API.
-- Nunca un test sin aserción, ni `Skip`, ni `Thread.Sleep`.
+- Name: `<Case>_<Scenario>_<Result>`, for example `AddSong_to_missing_show_returns_404`.
+- Arrange, Act, Assert separated by a blank line. One behavior per test.
+- Shouldly assertions on what is observable: status, body, headers, state read back through the API.
+- Never a test without an assertion, nor `Skip`, nor `Thread.Sleep`.
 
-## Si un test no pasa
+## If a test does not pass
 
-No cambies `src/` ni el test para que pase. En `/plan` los tests nuevos **deben** fallar: describen comportamiento que aún no existe.
+Do not change `src/` or the test to make it pass. In `/plan` the new tests **must** fail: they describe behavior that does not exist yet.

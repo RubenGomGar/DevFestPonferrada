@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
-# /dotnet-team:guardrails: instala los guardarraíles ejecutables de Platform en la solución.
-# Nunca sobrescribe: si un fichero ya existe, lo deja y lo dice.
+# Qué hace: instala en la solución los guardarraíles ejecutables de Platform (Directory.Build.props, .editorconfig y un proyecto de tests de arquitectura con LayersTests). Nunca sobrescribe: si un fichero ya existe, lo deja y lo dice.
+# Para qué sirve: lo ejecuta /dotnet-team:guardrails (equivalente al /make-guardrails de Platform) para convertir las reglas del equipo en código antes de dar autonomía al agente.
 source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 TPL="$PLUGIN_ROOT/templates/guardrails"
-SLN="$(find_solution)" || { echo "✖ No hay ninguna solución .slnx/.sln en la raíz de $PROJECT_DIR."; exit 1; }
+SLN="$(find_solution)" || { echo "✖ There is no .slnx/.sln solution at the root of $PROJECT_DIR."; exit 1; }
 name="$(basename "$SLN")"; name="${name%.*}"
 
 copy_once() {
-  if [ -e "$PROJECT_DIR/$1" ]; then echo "• $1 ya existe: no se toca."; else cp "$TPL/$1" "$PROJECT_DIR/$1"; echo "✔ $1"; fi
+  if [ -e "$PROJECT_DIR/$1" ]; then echo "• $1 already exists: left untouched."; else cp "$TPL/$1" "$PROJECT_DIR/$1"; echo "✔ $1"; fi
 }
 copy_once Directory.Build.props
 copy_once .editorconfig
 
 test_dir="tests/$name.ArchitectureTests"
 if [ -d "$PROJECT_DIR/$test_dir" ] || [ -n "$(find_test_project ArchitectureTests)" ]; then
-  echo "• Ya hay un proyecto de tests de arquitectura: no se toca."
+  echo "• There is already an architecture tests project: left untouched."
   exit 0
 fi
 
 apps="$(find "$PROJECT_DIR" -name '*.csproj' -not -path '*/bin/*' -not -path '*/obj/*' -not -path '*/node_modules/*' -not -path '*/tests/*' |
   grep -viE '(Tests?|AppHost|ServiceDefaults)\.csproj$' | sort)"
-[ -n "$apps" ] || { echo "✖ No hay proyectos de aplicación que comprobar."; exit 1; }
+[ -n "$apps" ] || { echo "✖ There are no application projects to check."; exit 1; }
 
 mkdir -p "$PROJECT_DIR/$test_dir"
 cpm=false
@@ -67,13 +67,13 @@ pkg() {
 {
   echo 'namespace PlatformGuardrails.ArchitectureTests;'
   echo
-  echo 'internal static class Proyectos'
+  echo 'internal static class Projects'
   echo '{'
-  printf '    public static readonly string[] Nombres = [%s];\n' "$(for p in $apps; do printf '"%s", ' "$(basename "$p" .csproj)"; done | sed 's/, $//')"
+  printf '    public static readonly string[] Names = [%s];\n' "$(for p in $apps; do printf '"%s", ' "$(basename "$p" .csproj)"; done | sed 's/, $//')"
   echo '}'
-} > "$PROJECT_DIR/$test_dir/Proyectos.cs"
+} > "$PROJECT_DIR/$test_dir/Projects.cs"
 
-cp "$TPL/ArchitectureTests/CapasTests.cs" "$PROJECT_DIR/$test_dir/CapasTests.cs"
-dotnet sln "$SLN" add "$PROJECT_DIR/$test_dir/$name.ArchitectureTests.csproj" > /dev/null && echo "✔ $test_dir (añadido a $(basename "$SLN"))"
+cp "$TPL/ArchitectureTests/LayersTests.cs" "$PROJECT_DIR/$test_dir/LayersTests.cs"
+dotnet sln "$SLN" add "$PROJECT_DIR/$test_dir/$name.ArchitectureTests.csproj" > /dev/null && echo "✔ $test_dir (added to $(basename "$SLN"))"
 echo
-echo "Proyectos bajo control: $(for p in $apps; do basename "$p" .csproj; done | paste -sd',' | sed 's/,/, /g')"
+echo "Projects under control: $(for p in $apps; do basename "$p" .csproj; done | paste -sd',' | sed 's/,/, /g')"

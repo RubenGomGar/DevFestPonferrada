@@ -1,5 +1,5 @@
 {
-  "description": "dotnet-team: trazas de lo que se invoca, guardia antes de cada escritura y puerta de salida de cada comando.",
+  "description": "dotnet-team: traces of what gets invoked, a guard before every write and an exit gate for each command.",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -38,7 +38,7 @@
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/stop-gate.sh\"",
             "timeout": 600,
-            "statusMessage": "dotnet-team: comprobando la definición de done"
+            "statusMessage": "dotnet-team: checking the definition of done"
           }
         ]
       }

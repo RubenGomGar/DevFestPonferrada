@@ -1,20 +1,22 @@
 ---
-description: Instala en la solución los guardarraíles ejecutables de Platform (build estricto, estilo y tests de arquitectura) y enseña qué falla hoy. Equivale al /make-guardrails de Platform.
+description: Installs the Platform executable guardrails in the solution (strict build, style and architecture tests) and shows what fails today. Equivalent to Platform's /make-guardrails.
 allowed-tools: Read, Bash(bash:*), Bash(dotnet build:*), Bash(dotnet test:*)
 ---
 
-# /guardrails · las reglas del equipo, convertidas en código
+# /guardrails · the team's rules, turned into code
 
-## Qué haces
+Reply to the user in the language they write in. Script output, Platform rule IDs and `.work/validate.md` keys and verdicts stay exactly as specified.
 
-1. Ejecuta `bash "${CLAUDE_PLUGIN_ROOT}/scripts/guardrails/init.sh"` y muestra su salida tal cual.
-2. Ejecuta `dotnet build` de la solución y después `dotnet test` del proyecto `tests/*ArchitectureTests`.
-3. No arreglas nada, ni código ni reglas: esta orden instala las reglas y enseña dónde se rompen.
+## What you do
 
-## Al terminar
+1. Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/guardrails/init.sh"` and show its output as is.
+2. Run `dotnet build` on the solution and then `dotnet test` on the `tests/*ArchitectureTests` project.
+3. You fix nothing, neither code nor rules: this command installs the rules and shows where they break.
 
-Resume en cinco líneas como máximo:
+## When you finish
 
-- Qué guardarraíles se han instalado y cuáles ya existían.
-- Qué falla ahora (errores de build o tests en rojo), agrupado y con la regla de Platform que lo exige.
-- El siguiente paso: arreglar la base hasta que esté en verde. Hasta entonces, `/dotnet-team:plan` no arranca porque su precondición lo impide.
+Summarize in at most five lines:
+
+- Which guardrails were installed and which already existed.
+- What fails now (build errors or red tests), grouped and with the Platform rule that requires it.
+- The next step: fix the codebase until it is green. Until then, `/dotnet-team:plan` will not start because its precondition prevents it.

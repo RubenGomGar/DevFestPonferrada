@@ -33,11 +33,11 @@ El expertise que el equipo lleva en la cabeza solo escala si la AI lo puede leer
 | Carpeta | Qué es |
 |---|---|
 | [`steps/`](steps/README.md) | Guion de 45 minutos, chuleta, material de los dos actos y `step.ps1` para avanzar la demo |
-| `src/Musicales.*` | API .NET 10 con Aspire siguiendo [Platform](https://platform.plainconcepts.com/docs/backend): Clean Architecture, vertical slices, CQS, `ErrorOr`, EF Core, SQL Server |
-| `tests/Musicales.ArchitectureTests` | Los guardarraíles convertidos en código: capas, dependencias, handlers `sealed` que devuelven `ErrorOr` |
-| `tests/Musicales.AcceptanceTests` | Tests de integración vía HTTP con `WebApplicationFactory` + Testcontainers |
+| `src/Musicals.*` | API .NET 10 con Aspire siguiendo [Platform](https://platform.plainconcepts.com/docs/backend): Clean Architecture, vertical slices, CQS, `ErrorOr`, EF Core, SQL Server |
+| `tests/Musicals.ArchitectureTests` | Los guardarraíles convertidos en código: capas, dependencias, handlers `sealed` que devuelven `ErrorOr` |
+| `tests/Musicals.AcceptanceTests` | Tests de integración vía HTTP con `WebApplicationFactory` + Testcontainers |
 | [`plugins/dotnet-team/`](plugins/dotnet-team/README.md) | El harness que se construye en el acto 2 |
-| `src/Musicales.AgentGateway` | Gateway LLM local (YARP) que mide skills, herramientas y tokens de Claude Code |
+| `src/Musicals.AgentGateway` | Gateway LLM local (YARP) que mide skills, herramientas y tokens de Claude Code |
 | `.claude-plugin/marketplace.json` | Este repo es también el marketplace del plugin |
 
 El musical vive aparte, en `C:\Charlas\musical-plugin`.
@@ -47,9 +47,9 @@ El musical vive aparte, en `C:\Charlas\musical-plugin`.
 Requisitos: .NET SDK 10, Docker, Git Bash (en Windows) y Claude Code.
 
 ```powershell
-dotnet build Musicales.slnx                                   # warnings como errores y auditoría de paquetes
-dotnet test Musicales.slnx                                    # arquitectura, aceptación (Testcontainers) y gateway
-dotnet run --project src/Musicales.AppHost --launch-profile http   # API + SQL + gateway + dashboard en http://localhost:15056
+dotnet build Musicals.slnx                                   # warnings como errores y auditoría de paquetes
+dotnet test Musicals.slnx                                    # arquitectura, aceptación (Testcontainers) y gateway
+dotnet run --project src/Musicals.AppHost --launch-profile http   # API + SQL + gateway + dashboard en http://localhost:15056
 ```
 
 Las [issues #1–#3](https://github.com/RubenGomGar/NetCoreConfMadrid2026/issues) son las de la demo: un command, una query y un bug sembrado (un título de solo espacios se acepta).
@@ -79,7 +79,7 @@ La guardia `PreToolUse` impide tocar los guardarraíles, silenciar avisos o mete
 
 Probado sobre un `dotnet new aspire-starter` recién creado:
 
-- `/validate` devuelve `NO_CUMPLE` con 12 hallazgos.
+- `/validate` devuelve `NON_COMPLIANT` con 12 hallazgos.
 - `/guardrails` pone el build en rojo: la plantilla trae paquetes vulnerables.
 - `/plan` se niega a arrancar sobre una base que no compila.
 
@@ -94,7 +94,7 @@ Así es como se monitoriza el uso de skills, pero hecho en .NET con YARP:
 | Capa | Quién decide qué se ve | Qué aparece |
 |---|---|---|
 | Hook (`trace.sh`) | El autor del plugin | `.work/trace.jsonl` |
-| Gateway | Quien controla la red | `herramientas [Skill(dotnet-team:dotnet-testing)] · tokens in 4 out 93 cache 55626` y las métricas `gateway.tool_use` y `gateway.tokens` |
+| Gateway | Quien controla la red | `tools [Skill(dotnet-team:dotnet-testing)] · tokens in 4 out 93 cache 55626` y las métricas `gateway.tool_use` y `gateway.tokens` |
 | OpenTelemetry nativo | El propio agente | `claude_code.user_prompt`, `api_request`, `skill_activated`, `tool_result`… |
 
 Detalles del gateway:

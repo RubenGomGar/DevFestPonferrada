@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Stop: la definición de done del comando activo. Si la puerta falla, el turno no termina
-# (exit 2) y el agente recibe el motivo. Tras MAX_GATE_ATTEMPTS fallos, cede a una persona.
+# Qué hace: ejecuta la puerta (definición de done) del comando activo según .work/phase; si falla, el turno no termina (exit 2) y tras MAX_GATE_ATTEMPTS fallos cede a una persona con .work/NEEDS_HUMAN.md.
+# Para qué sirve: es el hook Stop del plugin; convierte las puertas de /plan, /apply y /validate en un bucle que el agente no puede saltarse.
 source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 cat > /dev/null
@@ -16,7 +16,7 @@ attempts="$(cat "$WORK_DIR/gate-attempts" 2>/dev/null || echo 0)"
 
 if bash "$gate" > "$log" 2>&1; then
   phase_clear
-  echo "{\"systemMessage\": \"dotnet-team: puerta '$phase' superada. $(tail -n1 "$log" | sed 's/"/\\"/g')\"}"
+  echo "{\"systemMessage\": \"dotnet-team: gate '$phase' passed. $(tail -n1 "$log" | sed 's/"/\\"/g')\"}"
   exit 0
 fi
 
@@ -25,20 +25,20 @@ echo "$attempts" > "$WORK_DIR/gate-attempts"
 
 if [ "$attempts" -ge "$MAX_GATE_ATTEMPTS" ]; then
   {
-    echo "# Necesita una persona"
+    echo "# Needs a human"
     echo
-    echo "La puerta \`$phase\` ha fallado $attempts veces. El agente ha parado para no seguir en bucle."
+    echo "The \`$phase\` gate failed $attempts times. The agent stopped so it does not keep looping."
     echo
-    echo "Último resultado: \`.work/gate/$phase.log\`"
+    echo "Last result: \`.work/gate/$phase.log\`"
   } > "$WORK_DIR/NEEDS_HUMAN.md"
   phase_clear
-  echo "{\"systemMessage\": \"dotnet-team: la puerta '$phase' ha fallado $attempts veces. Ver .work/NEEDS_HUMAN.md\"}"
+  echo "{\"systemMessage\": \"dotnet-team: gate '$phase' failed $attempts times. See .work/NEEDS_HUMAN.md\"}"
   exit 0
 fi
 
 {
-  echo "dotnet-team: la puerta '$phase' no se cumple (intento $attempts de $MAX_GATE_ATTEMPTS). No termines todavía."
-  echo "Corrige la causa; nunca debilites un guardarraíl para pasar."
+  echo "dotnet-team: gate '$phase' is not met (attempt $attempts of $MAX_GATE_ATTEMPTS). Do not finish yet."
+  echo "Fix the cause; never weaken a guardrail to pass."
   echo
   tail -n 60 "$log"
 } >&2

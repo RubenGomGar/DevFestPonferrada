@@ -1,31 +1,33 @@
 ---
-description: Implementa un plan aprobado (.work/plan.md). Copia sus tests de aceptación, comprueba que están en rojo y escribe el código hasta dejarlos en verde sin romper los guardarraíles.
+description: Implements an approved plan (.work/plan.md). Copies its acceptance tests, checks they are red and writes the code until they are green without breaking the guardrails.
 allowed-tools: Read, Glob, Grep, Write(src/**), Edit(src/**), Write(tests/**), Edit(tests/**), Write(.work/**), Skill, Bash(dotnet build:*), Bash(dotnet test:*), Bash(dotnet ef:*)
 ---
 
-# /apply · del plan aprobado a los tests en verde
+# /apply · from the approved plan to green tests
 
-## Contexto precalculado
+Reply to the user in the language they write in. Plan headings and field names stay exactly as in the template.
 
-Lo ha generado un script antes de que leyeras nada: los tests del plan ya están en su sitio y en rojo. Úsalo; no lo vuelvas a descubrir.
+## Precomputed context
+
+A script generated this before you read anything: the plan tests are already in place and red. Use it; do not rediscover it.
 
 !`bash "${CLAUDE_PLUGIN_ROOT}/scripts/ctx/apply.sh"`
 
-## Qué haces
+## What you do
 
-1. Si el contexto dice **PRECONDICIÓN FALLIDA**, para: explica el motivo en una frase y no sigas.
-2. Lee `.work/plan.md` entero. Es el contrato: tareas, ficheros, contrato HTTP y errores. No amplíes el alcance; lo de `Fuera de alcance` no se hace.
-3. Carga las skills `dotnet-guardrails` (cómo se construye aquí) y `dotnet-testing` (qué test y dónde). Úsalas; no reimplementes lo que dicen.
-4. Lee el slice de referencia del contexto antes de escribir: el código nuevo se parece a él.
-5. Implementa las tareas en orden, de dentro afuera (Domain → Application → Infrastructure → Api). Tras cada tarea, `dotnet build` y sus tests con `dotnet test --filter`.
-6. Los tests de aceptación del plan no se tocan. Si uno te parece mal, para y explica por qué: se corrige en `/dotnet-team:plan`. Un hook lo impide; si te bloquea, no lo rodees.
-7. Tests unitarios solo si una tarea mete lógica con ramas reales, según `dotnet-testing`.
-8. Nunca tocas guardarraíles ni silencias avisos. No haces commit.
+1. If the context says **PRECONDITION FAILED**, stop: explain the reason in one sentence and go no further.
+2. Read `.work/plan.md` in full. It is the contract: tasks, files, HTTP contract and errors. Do not widen the scope; whatever is under `Out of scope` is not done.
+3. Load the `dotnet-guardrails` (how things are built here) and `dotnet-testing` (which test and where) skills. Use them; do not reimplement what they say.
+4. Read the reference slice from the context before writing: the new code looks like it.
+5. Implement the tasks in order, inside out (Domain → Application → Infrastructure → Api). After each task, run `dotnet build` and its tests with `dotnet test --filter`.
+6. The plan's acceptance tests are not touched. If one looks wrong, stop and explain why: it gets fixed in `/dotnet-team:plan`. A hook prevents it; if it blocks you, do not work around it.
+7. Unit tests only if a task adds logic with real branches, as `dotnet-testing` says.
+8. You never touch guardrails or silence warnings. You do not commit.
 
-## Al terminar
+## When you finish
 
-Resume en cinco líneas como máximo: ficheros tocados, tests en verde y cualquier decisión que el plan no dejara clara. Cierra con:
+Summarize in at most five lines: files touched, green tests and any decision the plan did not make clear. End with:
 
-> Revisa el diff (`git diff`) y, si te encaja, haz commit.
+> Review the diff (`git diff`) and, if you are happy with it, commit.
 
-Cuando termines, una puerta automática comprueba que los tests del plan siguen siendo los aprobados, que solo has tocado `src/` y tests unitarios, que compila, que la arquitectura sigue en verde y que **todos** los tests pasan. Si te bloquea, corrige según el motivo y vuelve a terminar.
+When you finish, an automatic gate checks that the plan tests are still the approved ones, that you only touched `src/` and unit tests, that it builds, that the architecture is still green and that **all** tests pass. If it blocks you, fix according to the reason and finish again.

@@ -3,13 +3,13 @@
 Veinte minutos. Se construye `plugins/dotnet-team` sobre la marcha en la rama `demo-live`.
 Si algo se tuerce: `./steps/step.ps1 <paso>` trae el fichero terminado desde `main`, o `git checkout <tag>`.
 
-Punto de partida, que se cuenta y no se construye: `src/Musicales` sigue Platform (Clean Architecture, slices, `ErrorOr`, Aspire) y ya tiene guardarraíles de build (`Directory.Build.props`) y de arquitectura (`tests/Musicales.ArchitectureTests`).
+Punto de partida, que se cuenta y no se construye: `src/Musicals` sigue Platform (Clean Architecture, slices, `ErrorOr`, Aspire) y ya tiene guardarraíles de build (`Directory.Build.props`) y de arquitectura (`tests/Musicals.ArchitectureTests`).
 
 ## N0 · Vibe coding (vídeo, 3 min)
 
 Prompt: `Implementa la issue #1 del repo`.
 
-Qué se ve: **sale bien**. Imita la feature `Obras`: capas, `ErrorOr`, 400/404/409 y tests de aceptación. En `.work/trace.jsonl` se ve el coste: busca un `CLAUDE.md` que no existe y se lee el README, toda `Obras` y los tests de arquitectura antes de escribir nada.
+Qué se ve: **sale bien**. Imita la feature `Shows`: capas, `ErrorOr`, 400/404/409 y tests de aceptación. En `.work/trace.jsonl` se ve el coste: busca un `CLAUDE.md` que no existe y se lee el README, toda `Shows` y los tests de arquitectura antes de escribir nada.
 
 **Frase:** «Sin harness, a veces sale bien… porque había un ejemplo que copiar. Ha tardado 3 minutos leyendo el repo, otra vez puede salir distinto, y lo que no está en el código (por qué `ErrorOr`, qué se testea, cuándo un 409) no lo puede deducir».
 
@@ -23,7 +23,7 @@ Qué se ve: **sale bien**. Imita la feature `Obras`: capas, `ErrorOr`, 400/404/4
 
 - `skills/dotnet-guardrails/SKILL.md`: Platform condensado. Los 🔒 los comprueba código.
 - La skill aconseja: con el `DbContext` pegado en un endpoint, `Revisa el endpoint /todas… Solo la revisión, no cambies nada` → la skill se carga sola por su `description` (`user-invocable: false`, no hay comando) y cita «`Api` no usa EF Core directamente».
-- El test obliga, demo del 🔒: añadir `MusicalesDbContext` en un endpoint → `dotnet test tests/Musicales.ArchitectureTests` → **rojo** (`Api_no_usa_EF_Core_directamente`).
+- El test obliga, demo del 🔒: añadir `MusicalsDbContext` en un endpoint → `dotnet test tests/Musicals.ArchitectureTests` → **rojo** (`Api_does_not_use_EF_Core_directly`).
 - Anécdota real: NetArchTest no ve dentro de las lambdas; el test comprueba también las referencias del ensamblado. **Los guardarraíles también se testean**.
 - `plugin.json` desde el día uno: `claude --plugin-dir plugins/dotnet-team`.
 
@@ -75,9 +75,9 @@ Demo con el bug (issue #3):
 
 1. `/dotnet-team:plan 3` → `.work/plan.md` con el test dentro.
 2. Puerta humana: `status: draft` → `status: approved`. Como la letra en el musical.
-3. `/dotnet-team:apply` → «✔ Rojo: 2 tests del plan compilan y fallan hoy» → `IsNullOrWhiteSpace` en `Obra.cs` → «✔ Implementación válida… (2 del plan)».
+3. `/dotnet-team:apply` → «✔ Red: 2 plan tests compile and fail today.» → `IsNullOrWhiteSpace` en `Show.cs` → «✔ Valid implementation… (2 from the plan)».
 
-Si un test del plan ya pasa, `/apply` no arranca: «estos tests del plan ya pasan, así que no describen nada nuevo». Si el modelo cambia el test para que pase, la guardia lo bloquea y la puerta lo detecta.
+Si un test del plan ya pasa, `/apply` no arranca: «these plan tests already pass, so they describe nothing new». Si el modelo cambia el test para que pase, la guardia lo bloquea y la puerta lo detecta.
 `bash plugins/dotnet-team/tests/run.sh`: los scripts del harness también tienen tests.
 
 ## N5b · Observar al agente: hook, gateway y OpenTelemetry
@@ -85,7 +85,7 @@ Si un test del plan ya pasa, `/apply` no arranca: «estos tests del plan ya pasa
 Cómo monitorizan Claude, Copilot y compañía el uso de skills: un proxy en medio del tráfico al modelo. Aquí, en .NET, con YARP dentro del mismo AppHost.
 
 ```powershell
-dotnet run --project src/Musicales.AppHost --launch-profile http   # API + SQL + agent-gateway + dashboard
+dotnet run --project src/Musicals.AppHost --launch-profile http   # API + SQL + agent-gateway + dashboard
 ./steps/gateway.ps1 -Otel                                          # claude vía http://localhost:5180 + OTel al dashboard
 aspire otel logs --dashboard-url http://localhost:15056 -n 40      # o el dashboard en el navegador
 ```
@@ -93,10 +93,10 @@ aspire otel logs --dashboard-url http://localhost:15056 -n 40      # o el dashbo
 | Capa | Quién decide qué se ve | Qué sale en el dashboard |
 |---|---|---|
 | Hook (`trace.sh`) | El autor del plugin | `.work/trace.jsonl` |
-| Gateway (`Musicales.AgentGateway`) | Quien controla la red | `agent-gateway`: `/v1/messages … herramientas [Skill(dotnet-team:dotnet-testing)] · tokens in 4 out 93 cache 55626` y las métricas `gateway.tool_use{tool,kind,skill}` y `gateway.tokens` |
+| Gateway (`Musicals.AgentGateway`) | Quien controla la red | `agent-gateway`: `/v1/messages … tools [Skill(dotnet-team:dotnet-testing)] · tokens in 4 out 93 cache 55626` y las métricas `gateway.tool_use{tool,kind,skill}` y `gateway.tokens` |
 | OTel nativo (`CLAUDE_CODE_ENABLE_TELEMETRY`) | El propio agente | `claude-code`: `user_prompt`, `api_request`, `skill_activated`, `tool_result`… |
 
-Cómo funciona el gateway, en tres ficheros de `src/Musicales.AgentGateway/Features/Telemetria/`:
+Cómo funciona el gateway, en tres ficheros de `src/Musicals.AgentGateway/Features/Telemetry/`:
 
 - `AnthropicTraffic`: lee la petición y cuenta solo los `tool_use` cuyo `tool_result` llega en el último mensaje, porque el historial se reenvía entero.
 - `TeeStream` + `SseUsageParser`: leen los tokens del SSE **mientras pasa**, sin retenerlo; si lo bufferizas, Claude Code se cuelga.
@@ -143,8 +143,8 @@ Resultado esperado (ensayado):
 
 | Orden | Qué sale |
 |---|---|
-| `/validate` | `NO_CUMPLE`: sin capas (BE-ARCH-01), sin `ErrorOr` (BE-ERR-01), sin build estricto (BE-BUILD-01), sin tests de arquitectura ni Testcontainers (BE-TEST-01/03), endpoints en `Program.cs` (BE-ARCH-05), sin `X-Robots-Tag` (BE-SEC-02), `DateTime.Now` (BE-TIME-01) |
-| `/guardrails` | Build en **rojo** al momento: paquetes vulnerables en la plantilla (`OpenTelemetry` 1.14, `MessagePack` 2.5.192, `Microsoft.OpenApi` 2.0) y `CA1852`. Con eso resuelto, `La_solucion_tiene_las_capas_de_Platform` en rojo |
-| `/plan 2` | **PRECONDICIÓN FALLIDA**: la solución no compila. El plan no arranca sobre una base que no cumple |
+| `/validate` | `NON_COMPLIANT`: sin capas (BE-ARCH-01), sin `ErrorOr` (BE-ERR-01), sin build estricto (BE-BUILD-01), sin tests de arquitectura ni Testcontainers (BE-TEST-01/03), endpoints en `Program.cs` (BE-ARCH-05), sin `X-Robots-Tag` (BE-SEC-02), `DateTime.Now` (BE-TIME-01) |
+| `/guardrails` | Build en **rojo** al momento: paquetes vulnerables en la plantilla (`OpenTelemetry` 1.14, `MessagePack` 2.5.192, `Microsoft.OpenApi` 2.0) y `CA1852`. Con eso resuelto, `Solution_has_the_Platform_layers` en rojo |
+| `/plan 2` | **PRECONDITION FAILED**: la solución no compila. El plan no arranca sobre una base que no cumple |
 
 **Frase final:** «Lo que tengo en la cabeza ya no depende de mí: está en un plugin que el equipo instala en dos líneas».
