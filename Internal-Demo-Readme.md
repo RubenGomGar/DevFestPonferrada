@@ -80,7 +80,7 @@ Ventanas abiertas, con fuente grande:
 | Min | Bloque | Modo |
 |---|---|---|
 | 0–3 | Gancho | MP3 |
-| 3–15 | Acto 1 · el musical | Contado, enseñando ficheros |
+| 3–15 | Acto 1 · el musical | Improvisado: historia, slides y repo `musical-plugin` |
 | 15–18 | Puente · vibe coding | Vídeo N0 |
 | 18–38 | Acto 2 · .NET | `step.ps1` + dos momentos en directo (N1 y N5) |
 | 38–43 | Cierre | En directo desde GitHub |
@@ -98,25 +98,9 @@ Ventanas abiertas, con fuente grande:
 
 ---
 
-## 3–15 · Acto 1 · el musical (contado)
+## 3–15 · Acto 1 · el musical (improvisado)
 
-Todo en el editor, carpeta `C:\Charlas\musical-plugin`. **No se lanza nada.**
-
-| Min | Peldaño | Fichero a enseñar | Qué decir |
-|---|---|---|---|
-| 3–5 | **M1 · MVP** | Ninguno (o la conversación original) | Suno es muy poco determinista: rock un día, ranchera al siguiente. MIDI más un prompt controlado → resultados parecidos. «Lo entiendo, pero si abro otra sesión, vuelvo a empezar» |
-| 5–7 | **M2 · Skill** | `skills/maqueta-suno/SKILL.md`, de `## Flujo` a `### 9. Escribir los prompts`; después `scripts/prosody.py` y `scripts/engine.py` | La receta sale de la conversación y entra en una skill. El modelo no cuenta sílabas ni sintetiza audio: lo hace un script. «Una habilidad, una finalidad» |
-| 7–8 | **M3 · Contrato de entrada** | `## Entradas` y `## Paleta fija` de `maqueta-suno/SKILL.md` | Si falta algo, lo pide. Lo que es fijo no se pregunta: menos decisiones, salida más predecible |
-| 8–10 | **M4 · Comando** | `commands/compositor.md`, sección «Decide la ruta» | Nadie tiene que escribir el prompt bueno: `/compositor` lo lleva dentro. Se pregunta una sola vez |
-| 10–12 | **M5 · Orquestador** | `skills/letra-musical/references/formato-letra.md` y la «Fase 1 / Fase 2» del comando | No soy letrista → segunda skill. Letra → **puerta humana** → maqueta. El contrato entre skills es un fichero. «Úsalas, no reimplementes lo que hacen» |
-| 12–15 | **M6 · Hooks y plugin** | `hooks/hooks.json`, `scripts/hooks/trace.sh`, `steps/act1/trace.jsonl` y `.claude-plugin/marketplace.json` | La traza dice qué comando, qué skill y qué script, y en qué orden. Un marketplace es un JSON. Instalación en dos líneas |
-
-Cierre del acto, en pantalla:
-
-```text
-/plugin marketplace add C:\Charlas\musical-plugin
-/plugin install musical@musical-marketplace
-```
+Contar la historia con las slides y el repo `C:\Charlas\musical-plugin` abierto en el editor.
 
 **Transición:** «Esto es un musical. ¿Funciona igual con un equipo .NET y su expertise? Vamos a verlo».
 
@@ -138,34 +122,50 @@ Todo en **T1**, rama `demo-live`, que ya está en `n0`.
 
 > **Después de cada `step.ps1`, reinicia Claude Code** (`/exit` y `claude --plugin-dir plugins/dotnet-team`). Los comandos, hooks y el MCP se cargan al arrancar.
 
-### 18–22 · N1 · Skill de guardarraíles (con un momento en directo)
+### 18–22 · N1 · Skill de guardarraíles: la skill aconseja, el test obliga (dos momentos en directo)
 
 ```powershell
 ./steps/step.ps1 n1
+claude --plugin-dir plugins/dotnet-team
 ```
 
-1. Enseñar `plugins/dotnet-team/skills/dotnet-guardrails/SKILL.md`: «Platform condensado. Lo que lleva 🔒 lo comprueba código».
-2. **En directo, el 🔒:** pega esto en `src/Musicales.Api/Features/Obras/ObrasEndpoints.cs`, después de `ObtenerObra`:
+1. **(30 s)** Enseñar `plugins/dotnet-team/skills/dotnet-guardrails/SKILL.md`: «Platform condensado. Lo que lleva 🔒 lo comprueba código; lo demás es criterio». Señalar `user-invocable: false` y la `description`: no hay comando; Claude la carga sola cuando la tarea encaja.
+2. Pega esto en `src/Musicales.Api/Features/Obras/ObrasEndpoints.cs`, después de `ObtenerObra`:
 
    ```csharp
    group.MapGet("/todas", async (Musicales.Infrastructure.Persistence.MusicalesDbContext db) =>
        await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(db.Obras));
    ```
 
+3. **(1 min) En directo, la skill aconseja.** En Claude Code:
+
+   ```text
+   Revisa el endpoint /todas que acabo de añadir en src/Musicales.Api/Features/Obras/ObrasEndpoints.cs. Solo la revisión, no cambies nada.
+   ```
+
+   | Qué sale | Qué decir |
+   |---|---|
+   | `Skill(dotnet-team:dotnet-guardrails)` sin pedirla | «No le he dicho qué reglas usar: se ha cargado sola por su descripción» |
+   | «`Api` no usa EF Core directamente»; slice `ListarObras` con una query en `Application`, `IObrasQueries`, `AsNoTracking` y proyección a DTO | «Esto es lo que el vídeo N0 no tenía» |
+
+4. **(1 min) En directo, el test obliga:**
+
    ```powershell
    dotnet test tests/Musicales.ArchitectureTests
    ```
 
-   Sale **rojo** en `Api_no_usa_EF_Core_directamente`: «Musicales.Api no puede depender de estos ensamblados».
+   Sale **rojo** en `Api_no_usa_EF_Core_directamente`: «Musicales.Api no puede depender de estos ensamblados». **Decir:** «Pero la skill es un consejo: si el modelo o yo la ignoramos, nadie se entera. El 🔒 sí se entera».
 
-3. **Decir la anécdota:** «NetArchTest no ve dentro de las lambdas. Lo descubrimos porque este test pasaba cuando no debía. Los guardarraíles también se testean».
-4. Deshacer **antes de seguir** (si no, `step.ps1` lo commitea):
+5. **Decir la anécdota:** «NetArchTest no ve dentro de las lambdas. Lo descubrimos porque este test pasaba cuando no debía. Los guardarraíles también se testean».
+6. Deshacer **antes de seguir** (si no, `step.ps1` lo commitea) y salir de Claude Code (`/exit`):
 
    ```powershell
    git checkout -- src
    ```
 
-5. Enseñar `plugins/dotnet-team/.claude-plugin/plugin.json`: «Plugin desde el día uno».
+7. **(30 s)** Enseñar `plugins/dotnet-team/.claude-plugin/plugin.json`: «Plugin desde el día uno».
+
+**Plan B:** si el modelo tarda o no carga la skill, salta el paso 3 y cuéntalo enseñando la sección «Capas» de `SKILL.md`. El rojo del test no depende del modelo.
 
 ### 22–24 · N2 · La issue con MCP, a mano
 
@@ -384,15 +384,33 @@ dotnet run --project src/Musicales.AppHost --launch-profile http
 
 Notas:
 
-## 2 · Los guardarraíles fallan cuando deben (2 min)
+## 2 · La skill aconseja y los guardarraíles fallan cuando deben (5 min)
 
-El mismo cambio que en N1 (Parte 2), sobre `main`:
+El mismo cambio que en N1 (Parte 2), sobre `main`. Primero la revisión con la skill:
+
+```powershell
+claude --plugin-dir plugins/dotnet-team
+```
+
+```text
+Revisa el endpoint /todas que acabo de añadir en src/Musicales.Api/Features/Obras/ObrasEndpoints.cs. Solo la revisión, no cambies nada.
+```
+
+| Comprobación | Esperado |
+|---|---|
+| Skill | `Skill(dotnet-team:dotnet-guardrails)` cargada sin pedirla |
+| Revisión | Cita «`Api` no usa EF Core directamente» y propone un slice `ListarObras` con query en `Application`, `IObrasQueries`, `AsNoTracking` y proyección a DTO |
+| Ficheros | `git status`: solo `ObrasEndpoints.cs` cambiado; no ha tocado nada más |
+
+Después el test, ya fuera de Claude Code:
 
 ```powershell
 dotnet test tests/Musicales.ArchitectureTests
 git checkout -- src
 ```
 
+- [ ] La skill se carga sola y la revisión cita las reglas
+- [ ] Cronometrado: la revisión tarda menos de 1 min (si no, va contada con `SKILL.md`)
 - [ ] Rojo en `Api_no_usa_EF_Core_directamente`
 
 Notas:

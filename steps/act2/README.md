@@ -20,7 +20,8 @@ Qué se ve: un endpoint con `DbContext` en `Program.cs`, excepciones, sin tests.
 ```
 
 - `skills/dotnet-guardrails/SKILL.md`: Platform condensado. Los 🔒 los comprueba código.
-- Demo del 🔒: añadir `MusicalesDbContext` en un endpoint → `dotnet test tests/Musicales.ArchitectureTests` → **rojo** (`Api_no_usa_EF_Core_directamente`).
+- La skill aconseja: con el `DbContext` pegado en un endpoint, `Revisa el endpoint /todas… Solo la revisión, no cambies nada` → la skill se carga sola por su `description` (`user-invocable: false`, no hay comando) y cita «`Api` no usa EF Core directamente».
+- El test obliga, demo del 🔒: añadir `MusicalesDbContext` en un endpoint → `dotnet test tests/Musicales.ArchitectureTests` → **rojo** (`Api_no_usa_EF_Core_directamente`).
 - Anécdota real: NetArchTest no ve dentro de las lambdas; el test comprueba también las referencias del ensamblado. **Los guardarraíles también se testean**.
 - `plugin.json` desde el día uno: `claude --plugin-dir plugins/dotnet-team`.
 
