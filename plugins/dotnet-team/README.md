@@ -25,7 +25,7 @@ El expertise .NET del equipo como harness de Claude Code: los guardarraíles de 
 | `scripts/ctx/plan.sh` | Script | Precondición y contexto precalculado de `/plan` |
 | `scripts/validate/facts.sh` | Script | Hechos deterministas de una carpeta |
 | `scripts/guardrails/init.sh` | Script | Instalar los guardarraíles sin sobrescribir nada |
-| `.mcp.json` | MCP | Servidor de GitHub (`GITHUB_PERSONAL_ACCESS_TOKEN`); si falta, `gh issue view` |
+| `.mcp.json` + `scripts/mcp/github-headers.sh` | MCP | GitHub remoto **solo lectura de issues** (6 herramientas en vez de 49), autenticado con la sesión de `gh auth login` vía `headersHelper`; sin tokens propios. Plan B: `gh issue view` |
 
 ## Hooks
 

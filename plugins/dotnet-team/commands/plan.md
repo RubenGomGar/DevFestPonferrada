@@ -1,7 +1,7 @@
 ---
 description: Convierte una issue de GitHub en un plan de vertical slices que respeta los guardarraíles y deja escritos los tests de aceptación en rojo (TDD). No implementa.
 argument-hint: "<número de issue>"
-allowed-tools: Read, Glob, Grep, Write(.work/**), Edit(.work/**), Write(tests/**), Edit(tests/**), Skill, Bash(gh issue view:*), mcp__plugin_dotnet-team_github__issue_read, mcp__plugin_dotnet-team_github__get_issue
+allowed-tools: Read, Glob, Grep, Write(.work/**), Edit(.work/**), Write(tests/**), Edit(tests/**), Skill, Bash(gh issue view:*), mcp__plugin_dotnet-team_github__issue_read
 ---
 
 # /plan · de una issue a un plan con tests en rojo
