@@ -76,3 +76,44 @@ changed_files() {
     git -C "$PROJECT_DIR" ls-files --others --exclude-standard -- . ':(exclude).work' ':(exclude).claude' 2>/dev/null
   } | sort -u
 }
+
+# Rutas de los tests que define el plan: encabezados #### `tests/….cs` en .work/plan.md.
+plan_test_paths() {
+  [ -f "$PLAN_FILE" ] || return 0
+  awk '{ sub(/\r$/, "") }
+    /^#### `tests\/[^`]+\.cs`[[:space:]]*$/ { p = $0; sub(/^#### `/, "", p); sub(/`[[:space:]]*$/, "", p); print p }' "$PLAN_FILE"
+}
+
+# Vuelca el bloque csharp que sigue a cada encabezado en <destino>/<ruta>.
+extract_plan_tests() {
+  local dest="$1" p
+  while IFS= read -r p; do mkdir -p "$dest/$(dirname "$p")"; done < <(plan_test_paths)
+  awk -v out="$dest" '
+    { sub(/\r$/, "") }
+    /^#### `tests\/[^`]+\.cs`[[:space:]]*$/ { p = $0; sub(/^#### `/, "", p); sub(/`[[:space:]]*$/, "", p); next }
+    p != "" && !inblock && /^```(csharp|cs)[[:space:]]*$/ { inblock = 1; f = out "/" p; printf "" > f; next }
+    inblock && /^```[[:space:]]*$/ { inblock = 0; close(f); p = ""; next }
+    inblock { print > f }
+  ' "$PLAN_FILE"
+}
+
+# Filtro de dotnet test con las clases que declaran los ficheros dados.
+test_class_filter() {
+  grep -hoE 'class [A-Z][A-Za-z0-9_]*' "$@" | awk '{print $2}' | sort -u |
+    sed 's/^/FullyQualifiedName~/' | paste -sd'|'
+}
+
+# Ejecuta tests sin compilar y deja los nombres en TRX_FAILED y TRX_PASSED (uno por línea).
+# Uso: run_tests_trx <proyecto|solución> <carpeta de resultados> [filtro]
+run_tests_trx() {
+  local target="$1" dir="$2" filter="${3:-}" args
+  rm -rf "$dir"
+  args=(test "$target" --no-build -nologo -v q --results-directory "$dir" --logger trx)
+  [ -n "$filter" ] && args+=(--filter "$filter")
+  dotnet "${args[@]}" > "$dir.log" 2>&1
+  TRX_FAILED=""; TRX_PASSED=""
+  ls "$dir"/*.trx > /dev/null 2>&1 || return 1
+  TRX_FAILED="$(cat "$dir"/*.trx | grep -oE '<UnitTestResult [^>]*outcome="Failed"' | sed -E 's/.*testName="([^"]*)".*/\1/')"
+  TRX_PASSED="$(cat "$dir"/*.trx | grep -oE '<UnitTestResult [^>]*outcome="Passed"' | sed -E 's/.*testName="([^"]*)".*/\1/')"
+  return 0
+}

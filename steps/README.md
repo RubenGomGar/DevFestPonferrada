@@ -18,9 +18,9 @@
 | Sin harness | Conversación → rock un día, ranchera al siguiente | Vibe coding: endpoint con lógica, sin tests |
 | Skill | `maqueta-suno` | `dotnet-guardrails` + tests de arquitectura |
 | Contrato de entrada | Instrumentos, estilo, tempo | La issue de GitHub vía MCP |
-| Comando | `/compositor` | `/dotnet-team:plan <issue>` |
+| Comando | `/compositor` | `/dotnet-team:plan <issue>` → `/dotnet-team:apply` |
 | Orquestador | `letra-musical` → `maqueta-suno` | `dotnet-guardrails` + `dotnet-testing` |
-| Hooks | Trazas | Trazas + guardia + puerta TDD |
+| Hooks | Trazas | Trazas + guardia + puertas TDD (rojo antes, verde después) |
 | Plugin | `musical@musical-marketplace` | `dotnet-team@netcoreconf-2026` |
 
 ## Antes de subir al escenario
@@ -31,7 +31,7 @@
 - [ ] Issues #1–#3 creadas y su copia en `steps/cache/` (plan B sin red).
 - [ ] `./steps/step.ps1 n0` ejecutado: rama `demo-live` sin plugin.
 - [ ] Ventana de terminal con fuente grande; `.work/` vacío.
-- [ ] Vídeos de respaldo de N0 (vibe coding) y N5 (puerta bloqueando).
+- [ ] Vídeos de respaldo de N0 (vibe coding) y N5 (`/plan 3` → aprobar → `/apply`, de rojo a verde).
 
 ## Chuleta
 

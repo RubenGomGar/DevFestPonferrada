@@ -12,8 +12,6 @@ internal static class ObrasEndpoints
 
         group.MapPost("/", CrearObra).WithName(nameof(CrearObra));
         group.MapGet("/{id:guid}", ObtenerObra).WithName(nameof(ObtenerObra));
-        // group.MapGet("/todas", async (Musicales.Infrastructure.Persistence.MusicalesDbContext db) =>
-        //     await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(db.Obras));
 
         return app;
     }

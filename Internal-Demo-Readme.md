@@ -86,7 +86,7 @@ Ventanas abiertas, con fuente grande:
 | 38–43 | Cierre | En directo desde GitHub |
 | 43–45 | Conclusión | Diapositiva |
 
-**Regla de oro:** en directo solo N1 (el test en rojo), N5 (`/plan 3`) y el cierre. El resto avanza con `step.ps1` y se cuenta enseñando el fichero.
+**Regla de oro:** en directo solo N1 (el test en rojo), N5 (`/plan 3` → aprobar → `/apply`) y el cierre. El resto avanza con `step.ps1` y se cuenta enseñando el fichero.
 
 ---
 
@@ -189,10 +189,9 @@ Plan B sin red: `steps/cache/issue-1.json`.
    - El prompt bueno, versionado.
    - La línea `` !`…ctx/plan.sh` ``: **contexto precalculado y precondición** (compila y la arquitectura en verde) antes de que el modelo lea nada.
 2. Enseñar `plugins/dotnet-team/templates/plan.md`: «Es el contrato del plan, como `formato-letra.md` en el musical».
-3. **Decir:** «Esto ya escribe `.work/plan.md` y los tests de aceptación. Pero todavía falla: nada obliga a que los tests compilen ni a que estén en rojo».
+3. **Decir:** «Esto ya escribe `.work/plan.md` con los tests de aceptación dentro: todo se revisa en un fichero. Pero todavía falla: nada obliga a que esos tests compilen, ni a que estén en rojo, ni a que quien implemente no los cambie».
 
-> No lances `/plan` aquí. Si lo haces, limpia antes de N4, porque `step.ps1` hace `git add -A` y commitearía los tests generados:
-> `git checkout -- .; git clean -fd tests; Remove-Item -Recurse -Force .work`
+> No lances `/plan` aquí. Si lo haces, borra `.work` antes de N4: `Remove-Item -Recurse -Force .work`
 
 ### 27–29 · N4 · Orquestador: segunda skill
 
@@ -204,72 +203,90 @@ Plan B sin red: `steps/cache/issue-1.json`.
 2. `git diff n3 n4 -- plugins/dotnet-team/commands/plan.md`: el comando carga las dos skills, no las reimplementa.
 3. **Decir:** «Letrista → compositor otra vez. El mismo patrón que en el musical».
 
-### 29–35 · N5 · Hooks: el momento central (en directo)
+### 29–36 · N5 · Hooks y `/apply`: de rojo a verde (el momento central, en directo)
 
 ```powershell
 ./steps/step.ps1 n5
-git status                                     # limpio: la precondición lo exige
+git status                                     # limpio: las precondiciones lo exigen
 claude --plugin-dir plugins/dotnet-team
 ```
 
-1. Mientras arranca, enseñar `plugins/dotnet-team/hooks/hooks.json`:
+1. Mientras arranca, enseñar `plugins/dotnet-team/hooks/hooks.json` y `commands/apply.md`:
 
-   | Hook | Script | Qué hace |
+   | Pieza | Script | Qué hace |
    |---|---|---|
    | `UserPromptSubmit`, `PostToolUse`, `SubagentStop` | `trace.sh` | El **mismo** fichero que en el musical |
-   | `PreToolUse` (Edit\|Write) | `guard-edits.sh` | En `/plan` no se toca `src/`; nunca los guardarraíles ni `#pragma` |
-   | `Stop` | `stop-gate.sh` → `gates/plan.sh` | **TDD determinista:** compila, arquitectura en verde y todos los tests nuevos en rojo |
+   | `PreToolUse` (Edit\|Write) | `guard-edits.sh` | En `/plan` solo se escribe el plan; en `/apply` no se tocan los tests del plan; nunca los guardarraíles ni `#pragma` |
+   | `Stop` en `/plan` | `gates/plan.sh` | Forma del plan y convenciones de `dotnet-testing` en los tests. No compila: es rápida |
+   | `!` de `/apply` | `ctx/apply.sh` | **Rojo:** plan aprobado; los tests del plan compilan y **todos** fallan antes de tocar código |
+   | `Stop` en `/apply` | `gates/apply.sh` | **Verde:** tests del plan intactos, compila, arquitectura y **todos** los tests en verde |
 
-2. En Claude Code:
+2. **El plan.** En Claude Code:
 
    ```text
    /dotnet-team:plan 3
    ```
-
-3. Qué tiene que ir saliendo, y qué decir mientras:
 
    | Momento | Qué sale | Qué decir |
    |---|---|---|
    | Arranque | «✔ Precondición: la solución compila y los tests de arquitectura están en verde» | «Esto lo ha calculado un script, no el modelo» |
    | Lectura | `issue_read` del MCP (o `gh issue view 3`) | «La issue es el contrato de entrada» |
    | Skills | `dotnet-guardrails` y `dotnet-testing` cargadas | «Orquesta, no reimplementa» |
-   | Escritura | `.work/plan.md` y un test en `tests/Musicales.AcceptanceTests/Features/Obras/` | «Solo HTTP y JSON: no conoce tipos de `src/` que aún no existen» |
-   | **Puerta (~40 s)** | «dotnet-team: puerta 'plan' superada. ✔ Plan válido: N tareas, M tests de aceptación en rojo…» | **Rellena los 40 s:** compila, la arquitectura sigue en verde y el test nuevo está en **rojo**. Si el test ya pasara, no describiría nada nuevo y la puerta lo devolvería |
+   | Escritura | Solo `.work/plan.md`, con el test dentro | «Un único fichero que revisar. Solo HTTP y JSON: no conoce tipos de `src/` que aún no existen» |
+   | Puerta (segundos) | «dotnet-team: puerta 'plan' superada. ✔ Plan válido: 1 tareas y 1 tests…» | «Comprueba las convenciones de testing del equipo: colección, nombres, ProblemDetails, nada de `Skip`» |
 
-4. **La guardia, en la misma sesión** (10 s):
+3. **La guardia del plan** (10 s), en la misma sesión:
 
    ```text
    Arregla el bug directamente en src/Musicales.Domain/Obras/Obra.cs
    ```
 
-   Bloqueado: «en /plan solo se escribe .work/plan.md y tests de aceptación».
+   Bloqueado: «en /plan solo se escribe .work/plan.md; los tests de aceptación van dentro del plan».
 
-5. La traza, en otra pestaña de T1:
+4. **La puerta humana.** Abrir `.work/plan.md` en VS Code, enseñar el test dentro y cambiar `status: draft` por `status: approved`. **Decir:** «Como la letra en el musical: una persona aprueba antes de componer».
 
-   ```powershell
-   Get-Content .work/trace.jsonl
+5. **La implementación:**
+
+   ```text
+   /dotnet-team:apply
    ```
 
-   `UserPromptSubmit /dotnet-team:plan 3`, las dos skills y el MCP o `gh`. **Decir:** «El mismo `trace.sh` del musical».
+   | Momento | Qué sale | Qué decir |
+   |---|---|---|
+   | **Rojo (~45 s)** | «✔ Rojo: 2 tests del plan compilan y fallan hoy» | **Rellena los 45 s:** el script ha copiado los tests del plan, ha compilado y los ha ejecutado. Si alguno ya pasara, no describiría nada nuevo y `/apply` no arrancaría |
+   | Implementación | `IsNullOrEmpty` → `IsNullOrWhiteSpace` en `Obra.cs` | «Una línea, en el dominio, como dice el plan» |
+   | **Verde (~20 s)** | «dotnet-team: puerta 'apply' superada. ✔ Implementación válida: … tests en verde (2 del plan)» | «Compila, arquitectura en verde, todos los tests en verde y los del plan sin tocar» |
 
-6. Rematar: «Los scripts del harness también tienen tests» y enseñar `bash plugins/dotnet-team/tests/run.sh` (sin ejecutarlo si vas justo).
+6. **La guardia de `/apply`** (10 s, solo si vas bien; antes de que termine o en una segunda petición):
+
+   ```text
+   Cambia el test para que espere 201
+   ```
+
+   Bloqueado: «los tests de aceptación del plan son el contrato: no se cambian para que pasen».
+
+7. La traza, en otra pestaña de T1: `Get-Content .work/trace.jsonl`. `/dotnet-team:plan 3`, `/dotnet-team:apply`, las dos skills y el MCP o `gh`. **Decir:** «El mismo `trace.sh` del musical».
+
+8. Rematar: «Los scripts del harness también tienen tests» y enseñar `bash plugins/dotnet-team/tests/run.sh` (sin ejecutarlo si vas justo).
 
 **Plan B:**
 
 | Falla | Qué hacer |
 |---|---|
-| El modelo tarda o se lía | Vídeo N5: la puerta rechazando un test que ya pasa |
+| El modelo tarda o se lía | Vídeo N5: `/plan 3` → aprobar → `/apply`, de rojo a verde |
+| Vas justo de tiempo | Haz `/plan 3` y la aprobación en directo; `/apply` en vídeo |
 | «PRECONDICIÓN FALLIDA: hay cambios sin commitear» | `git status`; `git stash -u` y repetir |
+| «PRECONDICIÓN FALLIDA: el plan está en 'draft'» | Falta la aprobación: `status: approved` en `.work/plan.md` |
 | El MCP no conecta | Sigue solo con `gh issue view`; contarlo como el plan B que trae el propio comando |
 | Sin red | `steps/cache/issue-3.json` y vídeo N5 |
 
-Al salir de N5, limpiar para no commitear el test en N6:
+Al salir de N5, limpiar para no commitear el arreglo ni el test en N6:
 
 ```powershell
-git checkout -- .; git clean -fd tests; Remove-Item -Recurse -Force .work
+git checkout -- .; git clean -fd src tests; Remove-Item -Recurse -Force .work
 ```
 
-### 35–36 · N5b · Observar al agente (bonus de 2 min, solo si vas bien)
+### 36–37 · N5b · Observar al agente (bonus de 1 min, solo si vas bien)
 
 Mejor con una captura del dashboard. Si se hace en directo, **siempre en T2**, nunca en T1: `gateway.ps1` deja `ANTHROPIC_BASE_URL` puesta en esa terminal.
 
@@ -286,7 +303,7 @@ Prompt: `Carga la skill dotnet-guardrails y dime la regla de errores`. En el das
 
 **Decir:** «Tres capas: el hook lo decide el autor del plugin; el gateway, quien controla la red; OpenTelemetry, el propio agente. Y ojo: el gateway ve tokens y código, por eso solo escucha en localhost».
 
-### 36–38 · N6 y N7 · Marketplace y bonus
+### 37–38 · N6 y N7 · Marketplace y bonus
 
 ```powershell
 ./steps/step.ps1 n6
@@ -343,7 +360,7 @@ Reiniciar Claude Code si no aparecen los comandos, y después:
 
 Ve en orden: lo menos probado va primero.
 
-> **Lo que nunca se ha ejecutado con el modelo real:** `/dotnet-team:plan` y el MCP de GitHub dentro del plugin (el endpoint y la autenticación con `gh` sí están probados con curl). La puerta TDD se probó con un plan simulado. `/validate` y el gateway sí se probaron con Claude Code de verdad.
+> **Lo que nunca se ha ejecutado con el modelo real:** `/dotnet-team:apply` de principio a fin. `/plan 3` sí, con el formato anterior (tests en fichero). Las puertas nuevas se probaron con scripts sobre un clon: la de `/plan` pasa con el plan de la issue 3, la precondición de `/apply` da «2 tests en rojo» y su puerta da verde con `IsNullOrWhiteSpace` y rechaza un test cambiado. `/validate` y el gateway sí se probaron con Claude Code de verdad.
 
 Marca cada casilla al terminar. Si algo falla, anota en **Notas** lo que salió.
 
@@ -380,7 +397,7 @@ git checkout -- src
 
 Notas:
 
-## 3 · `/plan` con el modelo real (lo más importante, 10–15 min)
+## 3a · `/plan` con el modelo real (lo más importante, 10–15 min)
 
 ```powershell
 git status          # limpio
@@ -396,8 +413,8 @@ claude --plugin-dir plugins/dotnet-team
 | Precondición | «✔ Precondición: la solución compila y los tests de arquitectura están en verde» |
 | Lectura de la issue | MCP (`issue_read`) o `gh issue view 3`. En `/mcp`, `plugin:dotnet-team:github` con 6 herramientas |
 | `.work/plan.md` | `issue: 3`, `status: draft`; secciones Objetivo, Guardarraíles aplicados, Tareas, Tests de aceptación y Fuera de alcance |
-| Test nuevo | En `tests/Musicales.AcceptanceTests/Features/Obras/`; solo HTTP y JSON |
-| Puerta (~40 s) | «dotnet-team: puerta 'plan' superada. ✔ Plan válido…» |
+| Test | **Dentro del plan**, bajo `` #### `tests/Musicales.AcceptanceTests/Features/Obras/….cs` ``; solo HTTP y JSON. `git status` limpio: ningún fichero nuevo |
+| Puerta (segundos) | «dotnet-team: puerta 'plan' superada. ✔ Plan válido…» |
 | `Get-Content .work/trace.jsonl` | `UserPromptSubmit /dotnet-team:plan 3`, las dos skills y el MCP o `gh` |
 
 - [ ] `/plan 3` termina con la puerta superada
@@ -408,7 +425,8 @@ Pruebas negativas, en la misma sesión:
 
 | Prompt | Esperado |
 |---|---|
-| «Arregla el bug directamente en src/Musicales.Domain/Obras/Obra.cs» | Bloqueado: «en /plan solo se escribe .work/plan.md y tests de aceptación» |
+| «Arregla el bug directamente en src/Musicales.Domain/Obras/Obra.cs» | Bloqueado: «en /plan solo se escribe .work/plan.md; los tests de aceptación van dentro del plan» |
+| «Escribe el test también en tests/» | Bloqueado por la misma guardia |
 | «Añade NoWarn al csproj de tests» | Bloqueado: «no se silencian avisos» |
 | Borra la sección `## Fuera de alcance` de `.work/plan.md` y pídele que termine | La puerta lo devuelve: «falta la sección '## Fuera de alcance'» |
 
@@ -427,6 +445,41 @@ Repetir con la issue grande:
 ```
 
 - [ ] `/plan 1` sale razonable: slices `AnadirNumero` (command) y `ListarNumeros` (query), tests de 201, 400, 404 y 409
+
+Notas:
+
+## 3b · `/apply` con el modelo real (10 min)
+
+Sobre el plan de la issue 3 del paso 3a, con `status: approved`:
+
+```text
+/dotnet-team:apply
+```
+
+| Comprobación | Esperado |
+|---|---|
+| Rojo (~45 s) | «✔ Rojo: 2 tests del plan compilan y fallan hoy» y el test copiado en `tests/Musicales.AcceptanceTests/Features/Obras/` |
+| Implementación | Solo `src/Musicales.Domain/Obras/Obra.cs`: `IsNullOrWhiteSpace` |
+| Puerta (~20 s) | «dotnet-team: puerta 'apply' superada. ✔ Implementación válida: … (2 del plan)» |
+
+- [ ] `/apply` termina con la puerta superada
+- [ ] Cronometrado: `/plan 3` + aprobar + `/apply` en menos de 7 min (si no, `/apply` va en vídeo)
+
+Pruebas negativas:
+
+| Qué | Esperado |
+|---|---|
+| `/dotnet-team:apply` con el plan en `draft` | «PRECONDICIÓN FALLIDA: el plan está en 'draft'…» |
+| `/dotnet-team:apply` con el bug ya arreglado en `src/` (commiteado en una rama de prueba) | «PRECONDICIÓN FALLIDA: estos tests del plan ya pasan…» |
+| Durante `/apply`: «Cambia el test para que espere 201» | Bloqueado: «los tests de aceptación del plan son el contrato» |
+
+- [ ] Las precondiciones, la guardia y la puerta bloquean
+
+Limpieza entre intentos:
+
+```powershell
+git checkout -- .; git clean -fd src tests; Remove-Item -Recurse -Force .work
+```
 
 Notas:
 
@@ -522,7 +575,7 @@ Copy-Item .work/trace.jsonl C:\Charlas\NetCoreConfMadrid2026\steps\act1\trace.js
 ## 9 · Vídeos de respaldo
 
 - [ ] N0 · vibe coding de la issue #1 sin harness
-- [ ] N5 · `/plan 3` completo y la puerta rechazando un test que ya pasa
+- [ ] N5 · `/plan 3` → aprobar → `/apply`, de rojo a verde, con la guardia bloqueando el cambio del test
 - [ ] Cierre · `aspire-starter` → install → `/validate` → `/guardrails` → `/plan` rechazado
 
 ---
@@ -535,7 +588,8 @@ Copy-Item .work/trace.jsonl C:\Charlas\NetCoreConfMadrid2026\steps\act1\trace.js
 | `step.ps1` commitea un test o un `DbContext` que no tocaba | Faltó limpiar tras N1 o N5 | `git reset --hard <tag anterior>` y repetir el paso |
 | Un comando o hook nuevo no aparece | Claude Code no se ha reiniciado tras `step.ps1` | `/exit` y relanzar |
 | La puerta salta en un turno que no toca | Quedó una fase a medias | `Remove-Item .work/phase` |
-| Aparece `.work/NEEDS_HUMAN.md` | La puerta falló 3 veces | Lee `.work/gate/plan.log`, corrige y borra `NEEDS_HUMAN.md` |
+| Aparece `.work/NEEDS_HUMAN.md` | La puerta falló 3 veces | Lee `.work/gate/plan.log` o `.work/gate/apply.log` (según la fase), corrige y borra `NEEDS_HUMAN.md` |
+| `/apply`: «no se han podido ejecutar los tests del plan» | Docker apagado o Testcontainers sin imagen | Arranca Docker; mira `.work/apply/red.log` |
 | El MCP de GitHub no conecta | `gh` sin sesión, o el helper no se ha aprobado | `gh auth login`; `/mcp` para ver el estado. Si no, `/plan` usa `gh issue view` |
 | Tests de aceptación lentos la primera vez | Testcontainers descargando la imagen de SQL Server | `docker pull mcr.microsoft.com/mssql/server:2022-latest` antes |
 | `gateway.ps1`: «El gateway no responde» | AppHost apagado o puerto 5180 ocupado | Arranca el AppHost; `netstat -ano \| findstr 5180` |
@@ -546,10 +600,10 @@ Copy-Item .work/trace.jsonl C:\Charlas\NetCoreConfMadrid2026\steps\act1\trace.js
 
 ## Recomendaciones para el día
 
-1. **En directo, solo N1 (el test en rojo), N5 (`/plan 3`) y el cierre.** El resto, con `step.ps1` y enseñando ficheros.
+1. **En directo, solo N1 (el test en rojo), N5 (`/plan 3` → aprobar → `/apply`) y el cierre.** El resto, con `step.ps1` y enseñando ficheros.
 2. **La issue #3 en directo**; la #1, en vídeo.
-3. **Rellena los 40 s de la puerta** explicando qué comprueba: compila, la arquitectura sigue en verde y el test nuevo está en rojo.
+3. **Rellena los 45 s del rojo de `/apply`** explicando qué comprueba: los tests del plan se han copiado, compilan y fallan todos. Y los ~20 s del verde: compila, arquitectura y todos los tests en verde, sin tocar los del plan.
 4. **El cierre es un mensaje**: «el plan no arranca sobre una base que no cumple». No arregles el proyecto en directo.
 5. **Gateway: bonus de 2 minutos** o una captura del dashboard.
 6. **Sin `ANTHROPIC_BASE_URL` en T1 ni en T3**: si el gateway cae, cae todo.
-7. **Si vas tarde a los 30 min**, salta N5b y N7 y ve directo al cierre.
+7. **Si vas tarde a los 30 min**, `/apply` en vídeo, salta N5b y N7 y ve directo al cierre.

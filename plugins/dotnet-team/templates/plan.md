@@ -34,6 +34,14 @@ Una o dos frases con el comportamiento observable que cambia para quien usa la A
 |---|---|---|
 | `Caso_escenario_resultado` | `tests/<App>.AcceptanceTests/Features/<Feature>/<Clase>Tests.cs` | El endpoint no existe (404) |
 
+Un bloque por fichero nuevo, con su ruta en el encabezado. `/apply` lo copia tal cual a esa ruta y comprueba que falla antes de implementar.
+
+#### `tests/<App>.AcceptanceTests/Features/<Feature>/<Clase>Tests.cs`
+
+```csharp
+// El fichero completo: usings, namespace y clase.
+```
+
 ## Fuera de alcance
 
 - Lo que alguien podría esperar y no se hace en este plan.

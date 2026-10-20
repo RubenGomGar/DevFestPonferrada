@@ -19,7 +19,7 @@ $steps = [ordered]@{
   n2 = @{ Title = 'GitHub MCP en el plugin'; Paths = @("$plugin/.mcp.json", "$plugin/scripts/mcp") }
   n3 = @{ Title = 'Comando /plan'; Paths = @("$plugin/templates/plan.md", "$plugin/scripts/lib.sh", "$plugin/scripts/ctx/plan.sh"); Override = @("$plugin/commands/plan.md") }
   n4 = @{ Title = 'Orquestador: segunda skill'; Paths = @("$plugin/skills/dotnet-testing", "$plugin/commands/plan.md") }
-  n5 = @{ Title = 'Hooks: trazas, guardia y puerta TDD'; Paths = @("$plugin/hooks", "$plugin/scripts/hooks", "$plugin/scripts/gates/plan.sh", "$plugin/tests") }
+  n5 = @{ Title = 'Hooks: trazas, guardia y puertas TDD · /apply'; Paths = @("$plugin/hooks", "$plugin/scripts/hooks", "$plugin/scripts/gates/plan.sh", "$plugin/commands/apply.md", "$plugin/scripts/ctx/apply.sh", "$plugin/scripts/gates/apply.sh", "$plugin/tests") }
   n6 = @{ Title = 'Marketplace'; Paths = @('.claude-plugin/marketplace.json', "$plugin/README.md") }
   n7 = @{ Title = 'Bonus: /validate y /guardrails'; Paths = @("$plugin/commands/validate.md", "$plugin/commands/guardrails.md", "$plugin/agents", "$plugin/references", "$plugin/scripts/validate", "$plugin/scripts/gates/validate.sh", "$plugin/scripts/guardrails", "$plugin/templates/guardrails") }
 }

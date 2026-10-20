@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Puerta de /plan (TDD): el plan tiene la forma del contrato y los tests de aceptación nuevos
-# compilan, FALLAN todos y no rompen la arquitectura. No juzga si el plan es bueno: eso es humano.
+# Puerta de /plan: el plan tiene la forma del contrato y sus tests de aceptación, escritos dentro
+# del plan, siguen las convenciones de dotnet-testing. No compila ni ejecuta: /apply comprueba que
+# están en rojo antes de implementar. No juzga si el plan es bueno: eso es humano.
 source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 errors=()
@@ -24,13 +25,50 @@ for field in "- Capas:" "- Ficheros:" "- Contrato HTTP:" "- Tests:"; do
   [ "$n" -ge "$tasks" ] || errors+=("cada tarea necesita '$field' ($n de $tasks)")
 done
 
-# 2. El plan no implementa: solo tests de aceptación fuera de .work/
-new_tests=()
+# 2. El plan no implementa ni crea ficheros: todo vive en .work/plan.md
 while IFS= read -r f; do
-  [ -n "$f" ] || continue
-  if is_acceptance_test_path "$f"; then new_tests+=("$f"); else errors+=("el plan ha modificado '$f'; solo puede escribir tests de aceptación"); fi
+  [ -n "$f" ] && errors+=("el plan ha modificado '$f'; en /plan solo se escribe .work/plan.md")
 done < <(changed_files)
-[ ${#new_tests[@]} -ge 1 ] || errors+=("no hay tests de aceptación nuevos en tests/*AcceptanceTests*/")
+
+# 3. Los tests de aceptación, dentro del plan: un encabezado con la ruta y un bloque csharp
+stage="$WORK_DIR/gate/plan-tests"
+rm -rf "$stage"; mkdir -p "$stage"
+extract_plan_tests "$stage"
+paths=()
+while IFS= read -r p; do [ -n "$p" ] && paths+=("$p"); done < <(plan_test_paths)
+[ ${#paths[@]} -ge 1 ] || errors+=("no hay tests en el plan: un encabezado #### \`tests/<App>.AcceptanceTests/Features/<Feature>/<Clase>Tests.cs\` seguido del fichero en un bloque csharp")
+dupes="$(printf '%s\n' "${paths[@]}" | sort | uniq -d)"
+[ -z "$dupes" ] || errors+=("ficheros de test repetidos en el plan: $dupes")
+
+# 4. Convenciones de dotnet-testing que se pueden comprobar sin compilar
+namespaces="$(grep -rhoE '^namespace [A-Za-z0-9_.]+' "$PROJECT_DIR/src" "$PROJECT_DIR/tests" --include='*.cs' 2>/dev/null | awk '{print $2}' | sort -u)"
+app_roots="$(grep -rhoE '^namespace [A-Za-z0-9_.]+' "$PROJECT_DIR/src" --include='*.cs' 2>/dev/null | awk '{split($2, a, "."); print a[1]}' | sort -u)"
+tests=0
+for p in "${paths[@]}"; do
+  f="$stage/$p"
+  case "$p" in *..*) errors+=("'$p': ruta no válida"); continue ;; esac
+  is_acceptance_test_path "$p" || { errors+=("'$p' no está en tests/*AcceptanceTests*/"); continue; }
+  [ ! -e "$PROJECT_DIR/$p" ] || errors+=("'$p' ya existe; el plan solo define ficheros de test nuevos")
+  [ -s "$f" ] || { errors+=("'$p' no tiene debajo un bloque csharp con el fichero"); continue; }
+
+  grep -q '\[Collection(' "$f" || errors+=("'$p': usa la colección compartida del proyecto, [Collection(...)]")
+  n="$(grep -cE '\[(Fact|Theory)' "$f")"
+  [ "$n" -ge 1 ] || errors+=("'$p': no tiene ningún [Fact] ni [Theory]")
+  tests=$((tests + n))
+  grep -qE 'Skip *=' "$f" && errors+=("'$p': nada de Skip")
+  grep -q 'Thread\.Sleep' "$f" && errors+=("'$p': nada de Thread.Sleep")
+  grep -q '\.Should' "$f" || errors+=("'$p': sin aserciones de Shouldly")
+  while IFS= read -r m; do
+    [[ "$m" =~ ^[A-Z][A-Za-z0-9]*(_[A-Za-z0-9]+){2,}$ ]] || errors+=("'$p': '$m' no sigue <Caso>_<Escenario>_<Resultado>")
+  done < <(grep -oE 'public (async )?Task [A-Za-z0-9_]+\(' "$f" | sed -E 's/.*Task ([A-Za-z0-9_]+)\(/\1/')
+  if grep -qE 'HttpStatusCode\.(BadRequest|NotFound|Conflict)' "$f" && ! grep -q 'GetProperty(' "$f"; then
+    errors+=("'$p': los errores se comprueban leyendo el ProblemDetails (title o errors), no solo el status")
+  fi
+  while IFS= read -r ns; do
+    printf '%s\n' "$app_roots" | grep -qxF "${ns%%.*}" || continue
+    printf '%s\n' "$namespaces" | grep -qxF "$ns" || errors+=("'$p': 'using $ns;' no existe todavía; habla solo HTTP y JSON")
+  done < <(grep -oE '^using [A-Za-z0-9_.]+;' "$f" | sed -E 's/^using ([^;]+);/\1/')
+done
 
 if [ ${#errors[@]} -gt 0 ]; then
   echo "✖ El plan no cumple el contrato:"
@@ -38,41 +76,4 @@ if [ ${#errors[@]} -gt 0 ]; then
   exit 1
 fi
 
-# 3. Compila y la arquitectura sigue en verde
-mkdir -p "$WORK_DIR/gate"
-SLN="$(find_solution)"
-ARCH="$(find_test_project ArchitectureTests)"
-ACC="$(find_test_project AcceptanceTests)"
-if ! dotnet build "$SLN" -nologo -v q > "$WORK_DIR/gate/build.log" 2>&1; then
-  echo "✖ Los tests nuevos no compilan. Habla solo HTTP/JSON; no uses tipos de src/ que aún no existen."
-  grep -E 'error' "$WORK_DIR/gate/build.log" | sed -E 's/ \[.*//' | sort -u | head -n 15
-  exit 1
-fi
-if ! dotnet test "$ARCH" --no-build -nologo -v q > "$WORK_DIR/gate/arch.log" 2>&1; then
-  echo "✖ Los tests de arquitectura se han puesto en rojo."
-  grep -E 'Failed|Error Message' -A2 "$WORK_DIR/gate/arch.log" | head -n 20
-  exit 1
-fi
-
-# 4. TDD: cada test nuevo falla (describe comportamiento que aún no existe)
-classes="$(grep -hoE 'class [A-Z][A-Za-z0-9_]*' "${new_tests[@]/#/$PROJECT_DIR/}" | awk '{print $2}' | sort -u)"
-filter="$(printf '%s\n' $classes | sed 's/^/FullyQualifiedName~/' | paste -sd'|')"
-trx_dir="$WORK_DIR/gate/trx"
-rm -rf "$trx_dir"
-dotnet test "$ACC" --no-build -nologo -v q --filter "$filter" --results-directory "$trx_dir" --logger "trx;LogFileName=plan.trx" > "$WORK_DIR/gate/acceptance.log" 2>&1
-trx="$trx_dir/plan.trx"
-[ -f "$trx" ] || { echo "✖ No se han podido ejecutar los tests de aceptación (ver .work/gate/acceptance.log)."; tail -n 15 "$WORK_DIR/gate/acceptance.log"; exit 1; }
-
-failed="$(grep -oE '<UnitTestResult [^>]*outcome="Failed"' "$trx" | wc -l | tr -d ' ')"
-passed_names="$(grep -oE '<UnitTestResult [^>]*testName="[^"]*"[^>]*outcome="Passed"' "$trx" | sed -E 's/.*testName="([^"]*)".*/\1/')"
-if [ "$failed" -eq 0 ] && [ -z "$passed_names" ]; then
-  echo "✖ El filtro '$filter' no ha ejecutado ningún test."
-  exit 1
-fi
-if [ -n "$passed_names" ]; then
-  echo "✖ Estos tests nuevos ya pasan, así que no describen nada nuevo. Ajústalos al comportamiento de la issue:"
-  printf '%s\n' "$passed_names" | sed 's/^/  - /'
-  exit 1
-fi
-
-echo "✔ Plan válido: $tasks tareas, $failed tests de aceptación en rojo, arquitectura en verde."
+echo "✔ Plan válido: $tasks tareas y $tests tests de aceptación en ${#paths[@]} ficheros, con las convenciones de dotnet-testing. /apply comprobará que compilan y fallan."

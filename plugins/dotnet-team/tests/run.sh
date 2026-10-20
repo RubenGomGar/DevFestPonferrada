@@ -29,14 +29,81 @@ check "guardia: no hay connection strings en appsettings" 2 "$(guard src/App.Api
 
 mkdir -p "$TMP/.work" && echo plan > "$TMP/.work/phase"
 check "guardia plan: src/ bloqueado" 2 "$(guard src/App.Domain/Obra.cs 'x')"
-check "guardia plan: tests de aceptación permitidos" 0 "$(guard tests/App.AcceptanceTests/Features/X/XTests.cs 'x')"
+check "guardia plan: tests de aceptación bloqueados (van en el plan)" 2 "$(guard tests/App.AcceptanceTests/Features/X/XTests.cs 'x')"
 check "guardia plan: .work permitido" 0 "$(guard .work/plan.md 'x')"
+echo apply > "$TMP/.work/phase"
+check "guardia apply: src/ permitido" 0 "$(guard src/App.Domain/Obra.cs 'x')"
+check "guardia apply: tests del plan bloqueados" 2 "$(guard tests/App.AcceptanceTests/Features/X/XTests.cs 'x')"
+check "guardia apply: tests unitarios permitidos" 0 "$(guard tests/App.UnitTests/ObraTests.cs 'x')"
+check "guardia apply: fuera de src/ bloqueado" 2 "$(guard README.md 'x')"
 echo validate > "$TMP/.work/phase"
 check "guardia validate: solo lectura" 2 "$(guard tests/App.AcceptanceTests/Features/X/XTests.cs 'x')"
 rm -f "$TMP/.work/phase"
 
 printf '{"hook_event_name":"PostToolUse","tool_name":"Skill","tool_input":{"skill":"dotnet-team:dotnet-guardrails"}}' | bash "$PLUGIN/scripts/hooks/trace.sh"
 check "trazas: registra la skill" 1 "$(grep -c '"detail":"dotnet-team:dotnet-guardrails"' "$TMP/.work/trace.jsonl")"
+
+# Puerta de /plan: forma y convenciones de los tests escritos dentro del plan (sin dotnet).
+plan_gate() {
+  sed -e "s/__METODO__/$1/" -e "s/__EXTRA__/$2/" > "$TMP/.work/plan.md" <<'PLAN'
+---
+issue: 3
+feature: titulo-en-blanco
+status: draft
+---
+
+# Plan: título en blanco
+
+## Objetivo
+
+Un título en blanco devuelve 400.
+
+## Guardarraíles aplicados
+
+- Errores como valores.
+
+## Tareas
+
+### T1 · CrearObra · command
+
+- Capas: Domain
+- Ficheros: `src/App.Domain/Obra.cs`
+- Contrato HTTP: `POST /api/obras` → 201 | 400
+- Tests: `XTests.__METODO__`
+
+## Tests de aceptación
+
+#### `tests/App.AcceptanceTests/Features/X/XTests.cs`
+
+```csharp
+[Collection(ApiFixture.Name)]
+public class XTests
+{
+    [Fact__EXTRA__]
+    public async Task __METODO__()
+    {
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problem.GetProperty("errors").TryGetProperty("Obra.TituloInvalido", out _).ShouldBeTrue();
+    }
+}
+```
+
+## Fuera de alcance
+
+- Nada.
+PLAN
+  bash "$PLUGIN/scripts/gates/plan.sh" > /dev/null 2>&1
+  echo $?
+}
+check "puerta plan: plan válido" 0 "$(plan_gate CrearObra_titulo_en_blanco_devuelve_400 '')"
+check "puerta plan: nombre sin <Caso>_<Escenario>_<Resultado>" 1 "$(plan_gate CrearObraEnBlanco '')"
+check "puerta plan: nada de Skip" 1 "$(plan_gate CrearObra_titulo_en_blanco_devuelve_400 '(Skip = \"luego\")')"
+plan_gate CrearObra_titulo_en_blanco_devuelve_400 '' > /dev/null
+sed -i '/^```csharp$/,/^```$/d' "$TMP/.work/plan.md"
+check "puerta plan: sin bloque de test" 1 "$(bash "$PLUGIN/scripts/gates/plan.sh" > /dev/null 2>&1; echo $?)"
+mkdir -p "$TMP/tests/App.AcceptanceTests" && touch "$TMP/tests/App.AcceptanceTests/Suelto.cs"
+check "puerta plan: no escribe ficheros fuera del plan" 1 "$(plan_gate CrearObra_titulo_en_blanco_devuelve_400 '')"
+rm -rf "$TMP/tests" "$TMP/.work/plan.md"
 
 mkdir -p "$TMP/src" && touch "$TMP/src/Program.cs"
 echo "$TMP" > "$TMP/.work/validate-target"

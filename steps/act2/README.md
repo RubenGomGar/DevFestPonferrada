@@ -42,8 +42,8 @@ Funciona, pero cada persona lo pide distinto y sale distinto. Plan B sin red: `s
 
 - `commands/plan.md`: el prompt bueno, versionado. `!`script`` → **contexto precalculado** y precondición (compila + arquitectura en verde).
 - `templates/plan.md`: el contrato del plan, como `formato-letra.md` en el musical.
-- `/dotnet-team:plan 1` → `.work/plan.md` en `draft` + tests de aceptación.
-- **Falla todavía:** nada obliga a que los tests compilen ni a que estén en rojo.
+- `/dotnet-team:plan 1` → solo `.work/plan.md` en `draft`, con los tests de aceptación dentro: todo se revisa en un fichero.
+- **Falla todavía:** nada obliga a que los tests compilen, ni a que estén en rojo, ni a que alguien los implemente sin cambiarlos.
 
 ## N4 · Orquestador: segunda skill
 
@@ -54,19 +54,27 @@ Funciona, pero cada persona lo pide distinto y sale distinto. Plan B sin red: `s
 - `skills/dotnet-testing/SKILL.md`: el trofeo de Platform (integración vía HTTP con Testcontainers).
 - El comando carga las dos skills sin reimplementarlas. Es letrista → compositor otra vez.
 
-## N5 · Hooks
+## N5 · Hooks y `/apply`: de rojo a verde
 
 ```powershell
-./steps/step.ps1 n5
+./steps/step.ps1 n5   # hooks, puertas de /plan y /apply, y el comando /apply
 ```
 
 | Hook | Script | Qué demuestra |
 |---|---|---|
 | `UserPromptSubmit`, `PostToolUse`, `SubagentStop` | `trace.sh` | El **mismo** fichero que en el musical. `Get-Content .work/trace.jsonl` |
-| `PreToolUse` (Edit\|Write) | `guard-edits.sh` | En `/plan` no se toca `src/`; nunca los tests de arquitectura ni `#pragma` |
-| `Stop` | `stop-gate.sh` → `gates/plan.sh` | **TDD determinista:** compila, arquitectura en verde y **todos** los tests nuevos en rojo |
+| `PreToolUse` (Edit\|Write) | `guard-edits.sh` | En `/plan` solo se escribe el plan; en `/apply` no se tocan los tests del plan; nunca los guardarraíles ni `#pragma` |
+| `Stop` en `/plan` | `stop-gate.sh` → `gates/plan.sh` | Forma del plan y convenciones de `dotnet-testing` en los tests. Rápida: no compila |
+| `!` de `/apply` | `ctx/apply.sh` | **Rojo:** plan aprobado; los tests del plan compilan y **todos** fallan antes de implementar |
+| `Stop` en `/apply` | `stop-gate.sh` → `gates/apply.sh` | **Verde:** tests del plan intactos, compila, arquitectura y **todos** los tests en verde |
 
-Demo: `/dotnet-team:plan 3` (el bug). Si el modelo escribe un test que ya pasa, la puerta lo devuelve: «Estos tests nuevos ya pasan, así que no describen nada nuevo».
+Demo con el bug (issue #3):
+
+1. `/dotnet-team:plan 3` → `.work/plan.md` con el test dentro.
+2. Puerta humana: `status: draft` → `status: approved`. Como la letra en el musical.
+3. `/dotnet-team:apply` → «✔ Rojo: 2 tests del plan compilan y fallan hoy» → `IsNullOrWhiteSpace` en `Obra.cs` → «✔ Implementación válida… (2 del plan)».
+
+Si un test del plan ya pasa, `/apply` no arranca: «estos tests del plan ya pasan, así que no describen nada nuevo». Si el modelo cambia el test para que pase, la guardia lo bloquea y la puerta lo detecta.
 `bash plugins/dotnet-team/tests/run.sh`: los scripts del harness también tienen tests.
 
 ## N5b · Observar al agente: hook, gateway y OpenTelemetry

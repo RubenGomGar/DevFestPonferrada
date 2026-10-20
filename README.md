@@ -22,8 +22,8 @@ La charla sube la misma escalera dos veces. Primero con el musical, contado. Des
 | Skill | `maqueta-suno`: el paso a paso extraído | `dotnet-guardrails`: Platform condensado, más tests de arquitectura |
 | Contrato de entrada | Instrumentos, estilo, tempo | La issue de GitHub, vía MCP |
 | Comando | `/compositor`: nadie tiene que escribir el prompt bueno | `/dotnet-team:plan <issue>` |
-| Orquestador | `letra-musical` → puerta humana → `maqueta-suno` | `dotnet-guardrails` + `dotnet-testing` |
-| Hooks | Trazas de qué se invoca | Trazas + guardia de escrituras + puerta TDD determinista |
+| Orquestador | `letra-musical` → puerta humana → `maqueta-suno` | `/plan` → puerta humana (`approved`) → `/apply`, con `dotnet-guardrails` + `dotnet-testing` |
+| Hooks | Trazas de qué se invoca | Trazas + guardia de escrituras + puertas TDD deterministas (rojo antes, verde después) |
 | Plugin | `musical@musical-marketplace` | `dotnet-team@netcoreconf-2026` |
 
 El expertise que el equipo lleva en la cabeza solo escala si la AI lo puede leer (skills) y si hay algo que la obliga a respetarlo (tests, hooks, puertas).
@@ -63,7 +63,8 @@ Las [issues #1–#3](https://github.com/RubenGomGar/NetCoreConfMadrid2026/issues
 
 | Comando | Qué hace | Puerta (hook `Stop`) |
 |---|---|---|
-| `/dotnet-team:plan <issue>` | Lee la issue con el MCP de GitHub y escribe `.work/plan.md` en `draft` y los tests de aceptación | Compila, la arquitectura sigue en verde y **todos** los tests nuevos fallan (TDD) |
+| `/dotnet-team:plan <issue>` | Lee la issue con el MCP de GitHub y escribe solo `.work/plan.md` en `draft`, con los tests de aceptación dentro | Forma del plan y convenciones de `dotnet-testing` en los tests; nada fuera de `.work/` |
+| `/dotnet-team:apply` | Con el plan en `approved`, copia sus tests, comprueba que **todos fallan** (TDD) e implementa | Tests del plan intactos, compila, arquitectura y **todos** los tests en verde |
 | `/dotnet-team:validate [carpeta]` | `facts.sh` calcula los hechos; el agente `platform-reviewer` los contrasta con las reglas de Platform | Cada hallazgo cita una regla existente y el veredicto es coherente |
 | `/dotnet-team:guardrails` | Instala build estricto, `.editorconfig` y tests de arquitectura genéricos en cualquier solución | — (enseña qué falla) |
 
@@ -74,7 +75,7 @@ Cada comando tiene la misma anatomía:
 3. **Juicio** (modelo, skills y agentes): lo único que no se puede automatizar.
 4. **Puerta de salida** (hook): el turno no termina hasta que el resultado cumple el contrato.
 
-La guardia `PreToolUse` impide tocar los guardarraíles, silenciar avisos o meter connection strings, y en `/plan` solo deja escribir tests. Los scripts del harness tienen sus propios tests: `bash plugins/dotnet-team/tests/run.sh`.
+La guardia `PreToolUse` impide tocar los guardarraíles, silenciar avisos o meter connection strings, en `/plan` solo deja escribir el plan y en `/apply` no deja tocar los tests del plan. Los scripts del harness tienen sus propios tests: `bash plugins/dotnet-team/tests/run.sh`.
 
 Probado sobre un `dotnet new aspire-starter` recién creado:
 

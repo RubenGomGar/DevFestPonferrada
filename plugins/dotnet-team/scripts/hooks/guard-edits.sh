@@ -34,8 +34,14 @@ esac
 
 case "$phase" in
   plan)
-    is_acceptance_test_path "$rel" ||
-      deny "en /plan solo se escribe .work/plan.md y tests de aceptación (tests/*AcceptanceTests*/). El plan no implementa." ;;
+    deny "en /plan solo se escribe .work/plan.md; los tests de aceptación van dentro del plan. El plan no implementa." ;;
+  apply)
+    case "$rel" in
+      src/*|tests/*UnitTests*/*) ;;
+      tests/*AcceptanceTests*/*)
+        deny "los tests de aceptación del plan son el contrato: no se cambian para que pasen. Si están mal, vuelve a /dotnet-team:plan." ;;
+      *) deny "en /apply solo se escribe en src/ y en tests unitarios." ;;
+    esac ;;
   validate)
     deny "/validate es de solo lectura: el informe va en .work/validate.md." ;;
 esac
