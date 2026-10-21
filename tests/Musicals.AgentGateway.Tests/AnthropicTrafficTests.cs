@@ -51,6 +51,22 @@ public class AnthropicTrafficTests
     }
 
     [Fact]
+    public void ParseRequest_skill_followed_by_its_content_in_another_user_message_is_counted()
+    {
+        var summary = Parse("""
+            {
+              "messages": [
+                { "role": "assistant", "content": [{ "type": "tool_use", "id": "s", "name": "Skill", "input": { "skill": "dotnet-team:dotnet-guardrails" } }] },
+                { "role": "user", "content": [{ "type": "tool_result", "tool_use_id": "s" }] },
+                { "role": "user", "content": [{ "type": "text", "text": "# .NET backend guardrails" }] }
+              ]
+            }
+            """);
+
+        summary.ToolUses.ShouldHaveSingleItem().ShouldBe(new ToolUse("Skill", ToolKind.Skill, "dotnet-team:dotnet-guardrails"));
+    }
+
+    [Fact]
     public void ParseRequest_mcp_tool_is_classified_as_mcp()
     {
         var summary = Parse("""

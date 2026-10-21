@@ -18,7 +18,8 @@ internal static class AnthropicTraffic
     private static readonly string[] SkillInputKeys = ["skill", "name", "command"];
 
     // Claude Code resends the full history on every request. To count each tool only once,
-    // only the tool_use blocks whose result arrives in the last message are considered.
+    // only the tool_use blocks whose result arrives in the trailing user messages are considered.
+    // A Skill result is followed by another user message carrying the skill content.
     public static RequestSummary ParseRequest(JsonElement root)
     {
         var model = root.TryGetProperty("model", out var m) && m.ValueKind == JsonValueKind.String ? m.GetString() : null;
@@ -30,17 +31,24 @@ internal static class AnthropicTraffic
         }
 
         var count = messages.GetArrayLength();
-        if (count < 2 || Role(messages[count - 1]) != "user" || Role(messages[count - 2]) != "assistant")
+        var assistant = count - 1;
+        while (assistant >= 0 && Role(messages[assistant]) == "user")
+        {
+            assistant--;
+        }
+
+        if (assistant < 0 || assistant == count - 1 || Role(messages[assistant]) != "assistant")
         {
             return new RequestSummary(model, count, tools, []);
         }
 
-        var answered = Blocks(messages[count - 1], "tool_result")
+        var answered = Enumerable.Range(assistant + 1, count - assistant - 1)
+            .SelectMany(i => Blocks(messages[i], "tool_result"))
             .Select(b => b.TryGetProperty("tool_use_id", out var id) ? id.GetString() : null)
             .OfType<string>()
             .ToHashSet(StringComparer.Ordinal);
 
-        var uses = Blocks(messages[count - 2], "tool_use")
+        var uses = Blocks(messages[assistant], "tool_use")
             .Where(b => b.TryGetProperty("id", out var id) && answered.Contains(id.GetString() ?? ""))
             .Select(ToToolUse)
             .ToList();
