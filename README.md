@@ -61,6 +61,15 @@ Las [issues #1–#3](https://github.com/RubenGomGar/NetCoreConfMadrid2026/issues
 /plugin install dotnet-team@netcoreconf-2026
 ```
 
+Con el repo clonado, también se puede añadir el marketplace desde la ruta local, igual que `musical-plugin`. No clona nada, así que evita el `EPERM` al mover el clon que da a veces Windows con el antivirus o el indexador:
+
+```text
+/plugin marketplace add C:\Charlas\NetCoreConfMadrid2026
+/plugin install dotnet-team@netcoreconf-2026
+```
+
+Desde la ruta local, el plugin es el de la rama que tengas en el árbol de trabajo, no el de `main` en GitHub. Si editas `plugins/dotnet-team` y no se ven los cambios, ejecuta `/plugin marketplace update netcoreconf-2026` y reinstala el plugin.
+
 | Comando | Qué hace | Puerta (hook `Stop`) |
 |---|---|---|
 | `/dotnet-team:plan <issue>` | Lee la issue con el MCP de GitHub y escribe solo `.work/plan.md` en `draft`, con los tests de aceptación dentro | Forma del plan y convenciones de `dotnet-testing` en los tests; nada fuera de `.work/` |

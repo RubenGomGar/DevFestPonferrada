@@ -19,7 +19,7 @@ $ARGUMENTS
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/validate/facts.sh" <folder>`
 
    If it fails, stop and explain the reason in one sentence.
-2. Delegate to the `dotnet-team:platform-reviewer` agent. Pass it the folder, the rules path (`${CLAUDE_PLUGIN_ROOT}/references/platform-rules.md`) and the full facts table, as is. Do not review yourself: the agent is the expert.
+2. Delegate to the `dotnet-team:platform-reviewer` agent. Pass it the folder, the rules path (`${CLAUDE_PLUGIN_ROOT}/references/platform-rules.md`) and the full facts table, as is. Do not review yourself: the agent is the expert. Run it in the foreground and wait for its answer: never in the background, because you cannot finish until `.work/validate.md` exists.
 3. Write its answer, untouched, to `.work/validate.md`.
 4. You modify nothing else. A hook prevents it.
 
