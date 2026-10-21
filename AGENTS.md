@@ -5,7 +5,7 @@ Instructions for coding agents working in this repo. Humans start with `README.m
 ## What this is
 
 - **Musicals**: a .NET 10 API orchestrated with Aspire, built to the Plain Concepts Platform rules (Clean Architecture, vertical slices, `ErrorOr`, minimal APIs).
-- **The demo** for the talk "Del MVP al harness" (NetCoreConf Madrid 2026). `plugins/dotnet-team` is the harness built live, step by step.
+- **The demo** for the talk "Del MVP al harness" (DevFest Ponferrada 2026). `plugins/dotnet-team` is the harness built live, step by step.
 - **Language**: code, comments, tests, issues and commits in English. READMEs and the talk script (`steps/`, `Internal-Demo-Readme.md`) in Spanish.
 
 ## Map

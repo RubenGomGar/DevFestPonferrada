@@ -33,7 +33,7 @@ Qué se ve: **sale bien**. Imita la feature `Shows`: capas, `ErrorOr`, 400/404/4
 ./steps/step.ps1 n2   # .mcp.json con el servidor de GitHub
 ```
 
-Prompt: `Lee la issue #1 de RubenGomGar/NetCoreConfMadrid2026 y hazme un plan siguiendo la skill dotnet-guardrails`.
+Prompt: `Lee la issue #1 de RubenGomGar/DevFestPonferrada y hazme un plan siguiendo la skill dotnet-guardrails`.
 
 Funciona, pero cada persona lo pide distinto y sale distinto. Plan B sin red: `steps/cache/issue-1.json`.
 
@@ -132,8 +132,8 @@ claude
 ```
 
 ```text
-/plugin marketplace add RubenGomGar/NetCoreConfMadrid2026
-/plugin install dotnet-team@netcoreconf-2026
+/plugin marketplace add RubenGomGar/DevFestPonferrada
+/plugin install dotnet-team@devfest-ponferrada
 /dotnet-team:validate
 /dotnet-team:guardrails
 /dotnet-team:plan 2

@@ -3,8 +3,8 @@
 El expertise .NET del equipo como harness de Claude Code: los guardarraíles de [Platform](https://platform.plainconcepts.com/docs/backend), un `/plan` que parte de una issue y escribe el plan con sus tests dentro, un `/apply` que lleva esos tests de rojo a verde, y un `/validate` que contrasta cualquier carpeta con Platform.
 
 ```text
-/plugin marketplace add RubenGomGar/NetCoreConfMadrid2026
-/plugin install dotnet-team@netcoreconf-2026
+/plugin marketplace add RubenGomGar/DevFestPonferrada
+/plugin install dotnet-team@devfest-ponferrada
 ```
 
 ## Comandos

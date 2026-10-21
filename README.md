@@ -1,6 +1,6 @@
 # Del MVP al harness
 
-Charla de NetCoreConf Madrid 2026. Cómo convertir una idea hecha con AI en algo que se repite, se distribuye y se usa siempre igual, primero con un musical y después en un equipo .NET.
+Charla de DevFest Ponferrada 2026. Cómo convertir una idea hecha con AI en algo que se repite, se distribuye y se usa siempre igual, primero con un musical y después en un equipo .NET.
 
 > Un agente no es un modelo: es un modelo **más el harness que lo rodea**. El valor no está en el prompt, está en una arquitectura de piezas pequeñas con responsabilidades claras.
 
@@ -24,7 +24,7 @@ La charla sube la misma escalera dos veces. Primero con el musical, contado. Des
 | Comando | `/compositor`: nadie tiene que escribir el prompt bueno | `/dotnet-team:plan <issue>` |
 | Orquestador | `letra-musical` → puerta humana → `maqueta-suno` | `/plan` → puerta humana (`approved`) → `/apply`, con `dotnet-guardrails` + `dotnet-testing` |
 | Hooks | Trazas de qué se invoca | Trazas + guardia de escrituras + puertas TDD deterministas (rojo antes, verde después) |
-| Plugin | `musical@musical-marketplace` | `dotnet-team@netcoreconf-2026` |
+| Plugin | `musical@musical-marketplace` | `dotnet-team@devfest-ponferrada` |
 
 El expertise que el equipo lleva en la cabeza solo escala si la AI lo puede leer (skills) y si hay algo que la obliga a respetarlo (tests, hooks, puertas).
 
@@ -52,23 +52,23 @@ dotnet test Musicals.slnx                                    # arquitectura, ace
 dotnet run --project src/Musicals.AppHost --launch-profile http   # API + SQL + gateway + dashboard en http://localhost:15056
 ```
 
-Las [issues #1–#3](https://github.com/RubenGomGar/NetCoreConfMadrid2026/issues) son las de la demo: un command, una query y un bug sembrado (un título de solo espacios se acepta).
+Las [issues #1–#3](https://github.com/RubenGomGar/DevFestPonferrada/issues) son las de la demo: un command, una query y un bug sembrado (un título de solo espacios se acepta).
 
 ## El harness: `dotnet-team`
 
 ```text
-/plugin marketplace add RubenGomGar/NetCoreConfMadrid2026
-/plugin install dotnet-team@netcoreconf-2026
+/plugin marketplace add RubenGomGar/DevFestPonferrada
+/plugin install dotnet-team@devfest-ponferrada
 ```
 
 Con el repo clonado, también se puede añadir el marketplace desde la ruta local, igual que `musical-plugin`. No clona nada, así que evita el `EPERM` al mover el clon que da a veces Windows con el antivirus o el indexador:
 
 ```text
-/plugin marketplace add C:\Charlas\NetCoreConfMadrid2026
-/plugin install dotnet-team@netcoreconf-2026
+/plugin marketplace add C:\Charlas\DevFestPonferrada
+/plugin install dotnet-team@devfest-ponferrada
 ```
 
-Desde la ruta local, el plugin es el de la rama que tengas en el árbol de trabajo, no el de `main` en GitHub. Si editas `plugins/dotnet-team` y no se ven los cambios, ejecuta `/plugin marketplace update netcoreconf-2026` y reinstala el plugin.
+Desde la ruta local, el plugin es el de la rama que tengas en el árbol de trabajo, no el de `main` en GitHub. Si editas `plugins/dotnet-team` y no se ven los cambios, ejecuta `/plugin marketplace update devfest-ponferrada` y reinstala el plugin.
 
 | Comando | Qué hace | Puerta (hook `Stop`) |
 |---|---|---|

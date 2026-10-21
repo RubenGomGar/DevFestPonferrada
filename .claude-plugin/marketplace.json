@@ -1,11 +1,11 @@
 {
   "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
-  "name": "netcoreconf-2026",
+  "name": "devfest-ponferrada",
   "owner": {
     "name": "RubenGomGar"
   },
   "metadata": {
-    "description": "Marketplace for the NetCoreConf Madrid 2026 talk: from MVP to harness."
+    "description": "Marketplace for the DevFest Ponferrada 2026 talk: from MVP to harness."
   },
   "plugins": [
     {
