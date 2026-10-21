@@ -1,6 +1,6 @@
 # Internal Demo Readme · la charla paso a paso
 
-Guía interna para dar la demo de **«Del MVP al harness»** (NetCoreConf Madrid 2026, 45 min) y para ensayarla antes.
+Guía interna para dar la demo de **«Del MVP al harness»** (DevFest Ponferrada 2026, 45 min) y para ensayarla antes.
 
 ## El objetivo
 
@@ -27,7 +27,7 @@ Cómo está organizado:
 ## La víspera
 
 ```powershell
-cd C:\Charlas\NetCoreConfMadrid2026
+cd C:\Charlas\DevFestPonferrada
 git restore src/Musicals.Api/Features/Shows/ShowsEndpoints.cs   # quita el DbContext comentado del ensayo: no debe subir a main
 git status                                                       # solo deben quedar los cambios del MCP y los README
 git add -A; git commit -m "Guía interna"; git push
@@ -43,7 +43,7 @@ git add -A; git commit -m "Guía interna"; git push
 ```powershell
 docker pull mcr.microsoft.com/mssql/server:2022-latest
 gh auth status
-cd C:\Charlas\NetCoreConfMadrid2026
+cd C:\Charlas\DevFestPonferrada
 dotnet build Musicals.slnx; dotnet test Musicals.slnx      # calienta NuGet, Docker y Testcontainers
 dotnet new aspire-starter -o $env:TEMP\Calentar; Remove-Item -Recurse -Force $env:TEMP\Calentar   # calienta la plantilla
 ```
@@ -51,7 +51,7 @@ dotnet new aspire-starter -o $env:TEMP\Calentar; Remove-Item -Recurse -Force $en
 ## 15 minutos antes
 
 ```powershell
-cd C:\Charlas\NetCoreConfMadrid2026
+cd C:\Charlas\DevFestPonferrada
 git switch main; git status                       # limpio
 Remove-Item -Recurse -Force .work -ErrorAction SilentlyContinue
 ./steps/step.ps1 n0                               # rama demo-live sin plugin, tag n0
@@ -66,7 +66,7 @@ Ventanas abiertas, con fuente grande:
 
 | Ventana | Dónde | Para qué |
 |---|---|---|
-| **T1** · terminal principal | `C:\Charlas\NetCoreConfMadrid2026`, rama `demo-live` | `step.ps1`, `claude --plugin-dir plugins/dotnet-team` |
+| **T1** · terminal principal | `C:\Charlas\DevFestPonferrada`, rama `demo-live` | `step.ps1`, `claude --plugin-dir plugins/dotnet-team` |
 | **T2** · terminal del gateway | Misma carpeta | AppHost y `gateway.ps1` (solo en N5b) |
 | **T3** · terminal del cierre | `$env:TEMP` | `aspire-starter` y el plugin instalado desde GitHub |
 | **Editor** · VS Code | Dos carpetas: el repo y `C:\Charlas\musical-plugin` | Enseñar ficheros |
@@ -179,7 +179,7 @@ claude --plugin-dir plugins/dotnet-team
 ```
 
 1. Enseñar `plugins/dotnet-team/.mcp.json`: «GitHub remoto, solo lectura de issues: 6 herramientas en vez de 49. El token llega por variable de entorno: nada de secretos en el repo».
-2. Opcional, si va bien de tiempo: `claude --plugin-dir plugins/dotnet-team` y el prompt `Lee la issue #1 de RubenGomGar/NetCoreConfMadrid2026 y hazme un plan siguiendo la skill dotnet-guardrails`. Si no, solo contarlo.
+2. Opcional, si va bien de tiempo: `claude --plugin-dir plugins/dotnet-team` y el prompt `Lee la issue #1 de RubenGomGar/DevFestPonferrada y hazme un plan siguiendo la skill dotnet-guardrails`. Si no, solo contarlo.
 3. **Decir:** «Funciona, pero cada persona lo pide distinto y sale distinto. Falta el comando».
 
 Plan B sin red: `steps/cache/issue-1.json`.
@@ -317,8 +317,8 @@ claude
 ```
 
 ```text
-/plugin marketplace add RubenGomGar/NetCoreConfMadrid2026
-/plugin install dotnet-team@netcoreconf-2026
+/plugin marketplace add RubenGomGar/DevFestPonferrada
+/plugin install dotnet-team@devfest-ponferrada
 ```
 
 Reiniciar Claude Code si no aparecen los comandos, y después:
@@ -331,7 +331,7 @@ Reiniciar Claude Code si no aparecen los comandos, y después:
 
 > **Nota sobre `/plan 2`:** `ctx/plan.sh` comprueba antes que haya un proyecto `tests/*AcceptanceTests`, y la plantilla no lo trae. Lo más probable es que el motivo sea «no hay proyecto tests/*AcceptanceTests donde escribir los tests del plan», no «la solución no compila». Verifícalo en el ensayo (Parte 3, paso 4) y ajusta el texto de la diapositiva y de `steps/act2/README.md`. El mensaje de la charla es el mismo.
 
-**Plan B:** vídeo del cierre. Si el marketplace no responde, `claude --plugin-dir C:\Charlas\NetCoreConfMadrid2026\plugins\dotnet-team` y seguir.
+**Plan B:** vídeo del cierre. Si el marketplace no responde, `claude --plugin-dir C:\Charlas\DevFestPonferrada\plugins\dotnet-team` y seguir.
 
 ---
 
@@ -484,7 +484,7 @@ Notas:
 cd $env:TEMP; Remove-Item -Recurse -Force EquipoX -ErrorAction SilentlyContinue
 dotnet new aspire-starter -o EquipoX; cd EquipoX
 git init; git add -A; git commit -m init
-claude --plugin-dir C:\Charlas\NetCoreConfMadrid2026\plugins\dotnet-team
+claude --plugin-dir C:\Charlas\DevFestPonferrada\plugins\dotnet-team
 ```
 
 | Comando | Esperado |
@@ -503,8 +503,8 @@ Notas:
 Repite el bloque del paso 4 con otro nombre, sin `--plugin-dir`:
 
 ```text
-/plugin marketplace add RubenGomGar/NetCoreConfMadrid2026
-/plugin install dotnet-team@netcoreconf-2026
+/plugin marketplace add RubenGomGar/DevFestPonferrada
+/plugin install dotnet-team@devfest-ponferrada
 /dotnet-team:validate
 ```
 
@@ -516,7 +516,7 @@ Notas:
 ## 6 · Ensayo de los pasos del acto 2 (10 min)
 
 ```powershell
-cd C:\Charlas\NetCoreConfMadrid2026
+cd C:\Charlas\DevFestPonferrada
 ./steps/step.ps1 list
 ./steps/step.ps1 n0
 ./steps/step.ps1 n1   # … uno a uno hasta n7
@@ -562,7 +562,7 @@ Notas:
 ```
 
 ```powershell
-Copy-Item .work/trace.jsonl C:\Charlas\NetCoreConfMadrid2026\steps\act1\trace.jsonl
+Copy-Item .work/trace.jsonl C:\Charlas\DevFestPonferrada\steps\act1\trace.jsonl
 ```
 
 - [ ] Traza guardada en `steps/act1/trace.jsonl`

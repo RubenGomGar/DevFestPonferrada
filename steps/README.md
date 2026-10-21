@@ -21,7 +21,7 @@
 | Comando | `/compositor` | `/dotnet-team:plan <issue>` → `/dotnet-team:apply` |
 | Orquestador | `letra-musical` → `maqueta-suno` | `dotnet-guardrails` + `dotnet-testing` |
 | Hooks | Trazas | Trazas + guardia + puertas TDD (rojo antes, verde después) |
-| Plugin | `musical@musical-marketplace` | `dotnet-team@netcoreconf-2026` |
+| Plugin | `musical@musical-marketplace` | `dotnet-team@devfest-ponferrada` |
 
 ## Antes de subir al escenario
 
