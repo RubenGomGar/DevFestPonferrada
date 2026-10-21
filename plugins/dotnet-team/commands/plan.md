@@ -23,17 +23,21 @@ $ARGUMENTS
 1. If the context says **PRECONDITION FAILED**, stop: explain the reason in one sentence and go no further.
 2. If there is no issue number, ask for one in one sentence.
 3. Read the issue from the context's GitHub repository with the GitHub MCP (`issue_read`). If the MCP is not available, use `gh issue view <n> --json title,body,labels`.
-4. Load the `dotnet-guardrails` skill (how things are built here). Use it; do not reimplement what it says.
+4. Load the `dotnet-guardrails` (how things are built here) and `dotnet-testing` (which test and where) skills. Use them; do not reimplement what they say.
 5. Read the reference slice from the context and the code the issue touches. Read-only.
 6. Write `.work/plan.md` copying the exact structure of `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`:
    - `issue` is the number; `status: draft`. Approval is human: you never write `approved`.
    - One task per slice: `### T<n> · <SliceName> · command|query`, with `Layers`, `Files`, `HTTP contract`, `Errors` and `Tests`.
    - Under `Guardrails applied`, the specific rules that shape this plan.
-7. Write the acceptance tests **inside the plan**: one heading `` #### `tests/<App>.AcceptanceTests/Features/<Feature>/<Class>Tests.cs` `` per file and below it the full file in a `csharp` block. They must compile and **all fail** today.
-8. You only write `.work/plan.md`.
+7. Write the acceptance tests **inside the plan**, under `## Acceptance tests`: for each new file, a heading `` #### `tests/<App>.AcceptanceTests/Features/<Feature>/<Class>Tests.cs` `` and below it the full file in a `csharp` block. Do not create files in `tests/`: `/dotnet-team:apply` copies them and checks they are red before implementing.
+   - HTTP and JSON only; no `src/` type that does not exist yet. They must compile as they are.
+   - **All of them must fail** today: they describe behavior that does not exist yet. If it is a bug, a test that reproduces it.
+8. You only write `.work/plan.md`: not `src/`, not `tests/`, not guardrails. A hook prevents it; if it blocks you, do not work around it.
 
 ## When you finish
 
 Summarize in at most five lines: tasks, tests and important assumptions. End with:
 
-> Review `.work/plan.md`: the tests are inside. If you are happy with it, change `status: draft` to `status: approved`.
+> Review `.work/plan.md`: the tests are inside. If you are happy with it, change `status: draft` to `status: approved` and run `/dotnet-team:apply`.
+
+When you finish, an automatic gate checks the shape of the plan and that its tests follow the `dotnet-testing` conventions (shared collection, names, assertions, ProblemDetails, no `src/` types that do not exist). If it blocks you, fix according to the reason and finish again.
