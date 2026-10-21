@@ -105,6 +105,8 @@ Detalles del gateway:
 
 Ve tokens de sesión y código, así que solo escucha en localhost y nunca registra cuerpos ni cabeceras de autenticación.
 
+Aplica además la **team-security-policy**: si algún mensaje, el system prompt o el resultado de una herramienta contiene algo con pinta de secreto (claves de API, tokens de GitHub o AWS, claves privadas, contraseñas en cadenas de conexión, JWT), la petición no sale hacia Anthropic. Claude Code recibe un `403 permission_error` con la regla que ha saltado, y la métrica `gateway.security.blocked` lo cuenta. Como el historial se reenvía entero, sigue bloqueando hasta quitar el secreto con `/rewind`. Las reglas están en `Features/SecurityPolicy/SecretRules.cs`; se apaga con `TeamSecurityPolicy:Enabled=false`.
+
 ## Lecciones
 
 1. **Comando = orquestador, skills = expertos, scripts = músculo.** No mezcles roles.

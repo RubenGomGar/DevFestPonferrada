@@ -9,6 +9,7 @@ internal sealed class GatewayMetrics
     private readonly Counter<long> _requests;
     private readonly Counter<long> _toolUses;
     private readonly Counter<long> _tokens;
+    private readonly Counter<long> _securityBlocked;
 
     public GatewayMetrics(IMeterFactory meterFactory)
     {
@@ -16,7 +17,11 @@ internal sealed class GatewayMetrics
         _requests = meter.CreateCounter<long>("gateway.requests", description: "Inference requests that go through the gateway");
         _toolUses = meter.CreateCounter<long>("gateway.tool_use", description: "Tools the agent has executed (skills, MCP, builtin)");
         _tokens = meter.CreateCounter<long>("gateway.tokens", unit: "{token}", description: "Tokens by type according to the response stream");
+        _securityBlocked = meter.CreateCounter<long>("gateway.security.blocked", description: "Requests stopped by the team-security-policy, by rule");
     }
+
+    public void SecurityBlocked(string rule) =>
+        _securityBlocked.Add(1, new KeyValuePair<string, object?>("rule", rule));
 
     public void Request(string? model, int status) =>
         _requests.Add(1, new("model", model ?? "unknown"), new("status", status));

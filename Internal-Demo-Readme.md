@@ -292,6 +292,14 @@ Prompt: `Carga la skill dotnet-guardrails y dime la regla de errores`. En el das
 
 **Decir:** «Tres capas: el hook lo decide el autor del plugin; el gateway, quien controla la red; OpenTelemetry, el propio agente. Y ojo: el gateway ve tokens y código, por eso solo escucha en localhost».
 
+**Si sobra medio minuto: la team-security-policy.** En la misma sesión de T2, pega un token falso (tenlo copiado de antemano, `ghp_` + 36 letras, nunca uno real): `Usa este token para leer la issue: ghp_aaaa…`.
+
+- Claude Code muestra `Blocked by team-security-policy: possible secret (github-token) in messages[…]`. La petición no ha salido de la máquina.
+- Log de `agent-gateway`: `→ 403` y `team-security-policy blocked … rule github-token`, sin el valor.
+- `/rewind` hasta antes del token y la sesión sigue. Sin `/rewind` vuelve a bloquear, porque el historial se reenvía entero.
+
+**Decir:** «Esto no es una skill ni un hook del plugin: es la red. Da igual qué agente o qué plugin uses, el secreto no sale. Las reglas que se ejecutan, no se recomiendan, también valen para la seguridad».
+
 ### 37–38 · N6 y N7 · Marketplace y bonus
 
 ```powershell
@@ -364,7 +372,7 @@ dotnet run --project src/Musicals.AppHost --launch-profile http
 | Comprobación | Esperado |
 |---|---|
 | Build | `0 Warning(s)`, `0 Error(s)` |
-| Tests | Gateway 6, arquitectura 8 y aceptación 4, todos en verde |
+| Tests | Gateway 28, arquitectura 8 y aceptación 4, todos en verde |
 | Dashboard `http://localhost:15056` | `sql`, `api` y `agent-gateway` en *Running* y *Healthy* |
 | `POST /api/shows` con `"title": "Rasputin"` (`src/Musicals.Api/Musicals.Api.http`) | 201 |
 | `POST /api/shows` con `"title": "   "` | **201** (el bug de la issue #3; debería ser 400) |
@@ -548,7 +556,18 @@ Prompt: «Carga la skill dotnet-guardrails y dime la regla de errores».
 | Métricas de `agent-gateway` | `gateway.tool_use` con `skill`, y `gateway.tokens` por tipo |
 | Desde consola | `aspire otel logs --dashboard-url http://localhost:15056 -n 40` |
 
+Después, la team-security-policy (aún sin probar con Claude Code de verdad):
+
+| Prueba | Esperado |
+|---|---|
+| El prompt normal de arriba | `→ 200`. Si da `403` con «could not be inspected», Claude Code comprime el cuerpo: pon `TeamSecurityPolicy:FailClosed` a `false` |
+| Prompt con un `ghp_` falso + 36 letras | Mensaje `Blocked by team-security-policy … (github-token)`; log `→ 403` sin el valor |
+| Siguiente prompt sin `/rewind` | Sigue bloqueado: el token está en el historial |
+| `/rewind` hasta antes del token | La sesión sigue con normalidad |
+| Métricas de `agent-gateway` | `gateway.security.blocked` con `rule=github-token` |
+
 - [ ] El gateway mide skills y tokens, y Claude Code no se cuelga
+- [ ] La team-security-policy bloquea el token falso y no bloquea el tráfico normal
 - [ ] Captura del dashboard guardada para la diapositiva
 
 Notas:
@@ -590,6 +609,8 @@ Copy-Item .work/trace.jsonl C:\Charlas\NetCoreConfMadrid2026\steps\act1\trace.js
 | `gateway.ps1`: «El gateway no responde» | AppHost apagado o puerto 5180 ocupado | Arranca el AppHost; `netstat -ano \| findstr 5180` |
 | Claude Code va por el gateway sin quererlo | Se ejecutó `gateway.ps1` en esa terminal | `Remove-Item Env:ANTHROPIC_BASE_URL` o cambiar de terminal |
 | Claude Code se cuelga vía gateway | Algo bufferiza el SSE | Sin `ANTHROPIC_BASE_URL` funciona; revisa `TrafficCaptureMiddleware` |
+| Vía gateway todo da `403 … could not be inspected` | Claude Code manda el cuerpo comprimido y la política falla cerrada | `TeamSecurityPolicy:FailClosed` a `false` en `src/Musicals.AgentGateway/appsettings.json` y reiniciar el AppHost |
+| `403 Blocked by team-security-policy` en cada prompt | Hay un secreto (o algo que lo parece) en el historial | `/rewind` hasta antes de ese mensaje, o `/clear`. Si es un falso positivo, ajusta la regla en `SecretRules.cs` o `TeamSecurityPolicy:Enabled=false` |
 | Las trazas salen duplicadas en `trace.jsonl` | Conocido, causa sin investigar | No afecta a la demo |
 | `step.ps1 n1`: el checkout falla | `main` no tiene el último commit | Parte 1, «La víspera»: commit y push |
 
